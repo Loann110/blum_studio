@@ -27,6 +27,9 @@
   <img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-2b2f36?style=flat-square">
   <img alt="Node.js 20+" src="https://img.shields.io/badge/node-20%2B-2b2f36?style=flat-square&logo=nodedotjs&logoColor=white">
   <img alt="Works with any MCP client" src="https://img.shields.io/badge/agents-any%20MCP%20client-f0a33a?style=flat-square">
+  <a href="https://github.com/Loann110/blum_studio/actions/workflows/ci.yml">
+    <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/Loann110/blum_studio/ci.yml?branch=main&style=flat-square&logo=github&label=CI">
+  </a>
   <img alt="Runs locally" src="https://img.shields.io/badge/runs-offline-2f4f7f?style=flat-square">
 </p>
 
