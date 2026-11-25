@@ -26,7 +26,6 @@
 <p align="center">
   <img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-2b2f36?style=flat-square">
   <img alt="Node.js 20+" src="https://img.shields.io/badge/node-20%2B-2b2f36?style=flat-square&logo=nodedotjs&logoColor=white">
-  <img alt="MCP server" src="https://img.shields.io/badge/MCP-20%20tools-f0a33a?style=flat-square">
   <img alt="Works with any MCP client" src="https://img.shields.io/badge/agents-any%20MCP%20client-f0a33a?style=flat-square">
   <img alt="Runs locally" src="https://img.shields.io/badge/runs-offline-2f4f7f?style=flat-square">
 </p>
