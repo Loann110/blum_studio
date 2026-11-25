@@ -6,7 +6,7 @@ server/dist/
 server/browsers.json
 
 # Your designs, media, undo history and sessions
-designs/
+/designs/
 
 # Local scratch
 dev/tmp/
