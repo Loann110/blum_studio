@@ -10,7 +10,7 @@
     "test:engine": "tsc -p tsconfig.engine.json && node --test dist-engine-test/engine/engine.test.js dist-engine-test/engine/vector.test.js dist-engine-test/engine/virtual-grid.test.js",
     "build:server": "tsc -p ../server/tsconfig.json --noEmit && node ../scripts/build-server.mjs",
     "build:server-test": "tsc -p ../server/tsconfig.json",
-    "test:server": "cd .. && node --test --test-force-exit \"server/dist/js/server/test/*.test.js\"",
+    "test:server": "cd .. && node --test --test-force-exit server/dist/js/server/test/",
     "start": "node ../server/dist/server.js",
     "copy:ort": "node -e \"const fs=require('fs');fs.mkdirSync('dist/ort',{recursive:true});for(const f of ['ort.wasm.min.mjs','ort-wasm-simd-threaded.mjs','ort-wasm-simd-threaded.wasm'])fs.copyFileSync('node_modules/onnxruntime-web/dist/'+f,'dist/ort/'+f)\""
   },
