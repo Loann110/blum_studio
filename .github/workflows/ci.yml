@@ -14,10 +14,9 @@ jobs:
           cache-dependency-path: ui/package-lock.json
       - run: npm run setup
       - run: ln -s ../ui/node_modules server/node_modules
-      - run: npm run build
-        working-directory: ui
+      - run: node scripts/install-chromium.mjs
       - run: npm run test:engine
         working-directory: ui
-      - run: npm run build:server && npm run build:server-test && npm run test:server
+      - run: npm run build:server-test && npm run test:server
         working-directory: ui
       - run: npm run check

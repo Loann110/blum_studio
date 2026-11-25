@@ -10,11 +10,26 @@ import { createDesign, listDesigns } from "../store.js";
 import { newSession, sessionsDir } from "../sessions.js";
 import { createDesignTool } from "../mcp/tools/designs.js";
 import { liveServer, useTempDesigns, tinyPng, multipart, type Client, type Res } from "./helpers.js";
+import { setRunner } from "../agents/run.js";
 
 useTempDesigns("console");
 delete process.env.BLUM_CONSOLE_FAKE;
-after(() => setSpawner(null));
 
+setRunner(async (program, args) => {
+  const found = program === "claude" && args[0] === "--version";
+  return {
+    status: found ? 0 : 127,
+    stdout: found ? "1.0.0" : "",
+    stderr: "",
+    missing: !found,
+    timeout: false,
+  };
+});
+
+after(() => {
+  setSpawner(null);
+  setRunner(null);
+});
 const DANGEROUS = `draw & | > "quote" ^caret^ %PATH%`;
 
 interface Seen {

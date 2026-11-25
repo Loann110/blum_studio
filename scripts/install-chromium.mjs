@@ -47,7 +47,7 @@ if (exe && fs.existsSync(exe)) {
 }
 
 console.error("[blum-studio] Chromium is missing: downloading it now (one-time download, about 170 MB)...");
-const res = spawnSync(process.execPath, [found.cli, "install", "--only-shell", "chromium"], { stdio: "inherit" });
+const res = spawnSync(process.execPath, [found.cli, "install", "chromium"], { stdio: "inherit" });
 if (res.status !== 0) {
   console.error("[blum-studio] Chromium download failed (offline?). Retry with a connection.");
   process.exit(1);
