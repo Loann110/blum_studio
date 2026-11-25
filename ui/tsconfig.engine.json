@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "outDir": "dist-engine-test",
+    "rootDir": ".",
+    "sourceMap": false,
+    "skipLibCheck": true,
+    "allowUnreachableCode": false
+  },
+  "include": [
+    "engine/*.ts"
+  ]
+}

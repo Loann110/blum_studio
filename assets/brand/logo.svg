@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Blum Studio">
+  <!-- Blum mark, drawn like the UI: four outlined grey petals (the app's swatch
+       shape) around an amber centre, with a hard offset shadow. -->
+  <g transform="translate(2.5 2.5)" fill="#B6BCC4">
+    <g transform="rotate(45 22 22)">
+      <rect x="15" y="2.5" width="14" height="14" rx="3"/>
+      <rect x="27.5" y="15" width="14" height="14" rx="3"/>
+      <rect x="15" y="27.5" width="14" height="14" rx="3"/>
+      <rect x="2.5" y="15" width="14" height="14" rx="3"/>
+    </g>
+  </g>
+  <g transform="rotate(45 22 22)" fill="#E0E3E7" stroke="#2B2F36" stroke-width="2.6" stroke-linejoin="round">
+    <rect x="15" y="2.5" width="14" height="14" rx="3"/>
+    <rect x="27.5" y="15" width="14" height="14" rx="3"/>
+    <rect x="15" y="27.5" width="14" height="14" rx="3"/>
+    <rect x="2.5" y="15" width="14" height="14" rx="3"/>
+  </g>
+  <rect x="16.5" y="16.5" width="11" height="11" rx="2" fill="#F0A33A" stroke="#2B2F36" stroke-width="2.6"/>
+</svg>

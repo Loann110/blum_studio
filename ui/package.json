@@ -1,0 +1,28 @@
+{
+  "name": "blum-studio-ui",
+  "version": "0.0.1",
+  "license": "AGPL-3.0-or-later",
+  "private": true,
+  "description": "Blum Studio interface: shared HTML renderer and gallery",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && esbuild render/render.ts --bundle --format=iife --global-name=BlumRender --outfile=dist/render.bundle.js --minify && esbuild editor/editor.ts --bundle --format=iife --outfile=dist/editor/editor.js --minify && esbuild cutout/cutout.ts --bundle --format=iife --global-name=BlumCutout --outfile=dist/cutout.js --minify && npm run -s copy:ort",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:engine": "tsc -p tsconfig.engine.json && node --test dist-engine-test/engine/engine.test.js dist-engine-test/engine/vector.test.js dist-engine-test/engine/virtual-grid.test.js",
+    "build:server": "tsc -p ../server/tsconfig.json --noEmit && node ../scripts/build-server.mjs",
+    "build:server-test": "tsc -p ../server/tsconfig.json",
+    "test:server": "cd .. && node --test --test-force-exit \"server/dist/js/server/test/*.test.js\"",
+    "start": "node ../server/dist/server.js",
+    "copy:ort": "node -e \"const fs=require('fs');fs.mkdirSync('dist/ort',{recursive:true});for(const f of ['ort.wasm.min.mjs','ort-wasm-simd-threaded.mjs','ort-wasm-simd-threaded.wasm'])fs.copyFileSync('node_modules/onnxruntime-web/dist/'+f,'dist/ort/'+f)\""
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "lucide": "^1.74.0",
+    "onnxruntime-web": "1.30.0",
+    "playwright-core": "1.65.1",
+    "zod": "4.6.7"
+  }
+}

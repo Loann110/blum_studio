@@ -1,0 +1,55 @@
+{
+  "name": "blum-studio",
+  "version": "0.0.1",
+  "description": "An MCP server that turns any AI agent into a designer: stories, posts, posters and CVs, checked and exported to PNG or PDF, with a visual editor.",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "blum-studio": "./bin/blum-studio.mjs"
+  },
+  "files": [
+    "bin/blum-studio.mjs",
+    "scripts/start.mjs",
+    "scripts/install-chromium.mjs",
+    "server/dist",
+    "server/package.json",
+    "server/browsers.json",
+    "ui/dist",
+    "ui/gallery/*.html",
+    "ui/gallery/*.css",
+    "ui/gallery/styles/*.css",
+    "ui/editor/index.html",
+    "ui/editor/styles/*.css",
+    "ui/render/*.css",
+    "assets",
+    "examples",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Loann110/blum_studio"
+  },
+  "keywords": [
+    "design",
+    "mcp",
+    "model-context-protocol",
+    "poster",
+    "print",
+    "editor",
+    "pdf",
+    "png"
+  ],
+  "dependencies": {
+    "playwright-core": "1.65.1"
+  },
+  "scripts": {
+    "setup": "npm --prefix ui install --no-audit --no-fund && npm --prefix ui run build && npm --prefix ui run build:server",
+    "start": "node scripts/start.mjs",
+    "connect": "node server/dist/connect.js",
+    "check": "node scripts/mcp_check.mjs"
+  }
+}

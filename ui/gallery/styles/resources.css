@@ -1,0 +1,125 @@
+/* Resources page. */
+
+/* ---- resources page ---- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 14px 0 6px;
+}
+
+.tab {
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.tab:hover {
+  background: var(--panel);
+}
+
+.resource-search {
+  display: block;
+  width: min(360px, 100%);
+  margin: 4px 0 8px;
+  padding: 7px 10px;
+  border: var(--edge);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.tab.active {
+  background: var(--panel);
+  font-weight: 700;
+  box-shadow: var(--shadow);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.tile {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tile img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: var(--bg);
+}
+
+.tile.photo img {
+  object-fit: cover;
+  aspect-ratio: 4 / 3;
+}
+
+.tile .label {
+  padding: 8px 10px 10px;
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The virtual grid places rows itself: browser scroll anchoring would fight it. */
+.tiles {
+  overflow-anchor: none;
+}
+
+/* Virtual grid spacers: full-width rows giving the page its total height
+   while only the visible tiles are in the DOM. */
+.tiles .vg-pad {
+  grid-column: 1 / -1;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.fonts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.font-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  min-width: 0;
+}
+
+.font-card .face {
+  font-size: 22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.font-card .pangram {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,227 @@
+/* Create: the claude.ai-like home page. One centered prompt card. */
+
+.create {
+  display: flex;
+  justify-content: center;
+}
+
+.create-center {
+  width: 100%;
+  max-width: 760px;
+  margin-top: 18vh;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.create-center h1 {
+  margin: 0;
+  text-align: center;
+  font-size: 46px;
+  font-weight: 600;
+  color: #5d636c;
+  line-height: 1.02;
+  font-family: var(--font-display);
+  letter-spacing: -0.04em;
+  margin-bottom: 6px;
+}
+
+/* The prompt is a little drawn window: a title bar with three squares. */
+.prompt-card {
+  background: var(--surface);
+  border: var(--edge);
+  border-radius: 0;
+  box-shadow: 4px 4px 0 var(--shade);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.prompt-card textarea {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.5;
+  /* No drag handle: the box grows with the text, like chat inputs. */
+  resize: none;
+  field-sizing: content;
+  min-height: 64px;
+  max-height: 40vh;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.prompt-card textarea:focus {
+  outline: none;
+}
+
+.prompt-card:focus-within {
+  border-color: var(--brand);
+}
+
+.prompt-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prompt-row .primary {
+  margin-left: auto;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chips:empty {
+  display: none;
+}
+
+.chip {
+  font-size: 12px;
+  background: var(--hover);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 10px;
+  color: var(--ink);
+}
+
+/* ---- agent picker (compact, like the model menu) ---- */
+
+.agent-pick {
+  position: relative;
+}
+
+.agent-menu {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  min-width: 260px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 6px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.agent-menu[hidden] {
+  display: none;
+}
+
+.agent-item {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.agent-item:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.agent-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.agent-item-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.agent-item-state {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.agent-menu-note {
+  margin: 4px 0 0;
+  padding: 8px 10px 4px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+  max-width: 320px;
+}
+
+.agent-menu-note a {
+  color: var(--navy);
+}
+
+/* ---- format pills under the prompt ---- */
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.pill {
+  border: var(--edge);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 2px 2px 0 var(--shade);
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pill:hover {
+  background: var(--hover);
+}
+
+.pill.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--panel);
+  font-weight: 600;
+}
+
+.pills select {
+  border: var(--edge);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 2px 2px 0 var(--shade);
+  padding: 5px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  /* As wide as its label, like the format chips beside it. */
+  field-sizing: content;
+}
+
+@media (max-width: 760px) {
+  .create-center {
+    margin-top: 2vh;
+  }
+}
+
+.prompt-card::before {
+  /* An old-Windows style title bar: soft dark grey band, white title on the
+     left, a pixel Blum bloom on the right. */
+  content: "New design";
+  display: flex;
+  align-items: center;
+  height: 24px;
+  margin: -16px -16px 4px;
+  padding: 0 8px;
+  border-bottom: var(--edge);
+  color: #ffffff;
+  font: 700 12px/1 var(--font-display);
+  letter-spacing: 0.01em;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect x='2' y='0' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='4' y='0' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='10' y='0' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='12' y='0' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='0' y='2' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='2' y='2' width='2' height='2' fill='%23ffffff'/%3E%3Crect x='4' y='2' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='6' y='2' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='8' y='2' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='10' y='2' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='12' y='2' width='2' height='2' fill='%23ffffff'/%3E%3Crect x='14' y='2' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='0' y='4' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='2' y='4' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='4' y='4' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='6' y='4' width='2' height='2' fill='%23f0a33a'/%3E%3Crect x='8' y='4' width='2' height='2' fill='%23f0a33a'/%3E%3Crect x='10' y='4' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='12' y='4' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='14' y='4' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='2' y='6' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='4' y='6' width='2' height='2' fill='%23f0a33a'/%3E%3Crect x='6' y='6' width='2' height='2' fill='%23f0a33a'/%3E%3Crect x='8' y='6' width='2' height='2' fill='%23f0a33a'/%3E%3Crect x='10' y='6' width='2' height='2' fill='%23f0a33a'/%3E%3Crect x='12' y='6' width='2' height='2' fill='%23b6bcc4'/%3E%3Crect x='2' y='8' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='4' y='8' width='2' height='2' fill='%23f0a33a'/%3E%3Crect x='6' y='8' width='2' height='2' fill='%23f0a33a'/%3E%3Crect x='8' y='8' width='2' height='2' fill='%23f0a33a'/%3E%3Crect x='10' y='8' width='2' height='2' fill='%23f0a33a'/%3E%3Crect x='12' y='8' width='2' height='2' fill='%23b6bcc4'/%3E%3Crect x='0' y='10' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='2' y='10' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='4' y='10' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='6' y='10' width='2' height='2' fill='%23f0a33a'/%3E%3Crect x='8' y='10' width='2' height='2' fill='%23f0a33a'/%3E%3Crect x='10' y='10' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='12' y='10' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='14' y='10' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='0' y='12' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='2' y='12' width='2' height='2' fill='%23ffffff'/%3E%3Crect x='4' y='12' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='6' y='12' width='2' height='2' fill='%23b6bcc4'/%3E%3Crect x='8' y='12' width='2' height='2' fill='%23b6bcc4'/%3E%3Crect x='10' y='12' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='12' y='12' width='2' height='2' fill='%23b6bcc4'/%3E%3Crect x='14' y='12' width='2' height='2' fill='%23e0e3e7'/%3E%3Crect x='2' y='14' width='2' height='2' fill='%23b6bcc4'/%3E%3Crect x='4' y='14' width='2' height='2' fill='%23b6bcc4'/%3E%3Crect x='10' y='14' width='2' height='2' fill='%23b6bcc4'/%3E%3Crect x='12' y='14' width='2' height='2' fill='%23b6bcc4'/%3E%3C/svg%3E") right 6px center / 16px 16px no-repeat, #5d636c;
+}

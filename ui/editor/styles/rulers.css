@@ -1,0 +1,168 @@
+/* Editor rulers. */
+
+/* ---- rulers ---- */
+
+.rulers {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 8;
+  overflow: hidden;
+}
+
+.ruler-corner,
+.ruler-h,
+.ruler-v {
+  position: absolute;
+  background: var(--panel);
+}
+
+.ruler-corner {
+  width: 22px;
+  height: 22px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.ruler-h {
+  height: 22px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ruler-v {
+  width: 22px;
+  border-right: 1px solid var(--line);
+}
+
+[data-theme="dark"] .overlay .ghost {
+  border-color: rgba(122, 162, 247, 0.7);
+}
+
+/* Visible keyboard focus on every control of the chrome. */
+.topbar .btn:focus-visible,
+.rail button:focus-visible,
+.menu button:focus-visible,
+.context-menu button:focus-visible,
+.zoom-pill .btn:focus-visible,
+.zoom-pill .zoom-value:focus-visible,
+.dialog .btn:focus-visible,
+.doc-name:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] .topbar .btn:focus-visible,
+[data-theme="dark"] .rail button:focus-visible,
+[data-theme="dark"] .menu button:focus-visible,
+[data-theme="dark"] .context-menu button:focus-visible,
+[data-theme="dark"] .zoom-pill .btn:focus-visible,
+[data-theme="dark"] .zoom-pill .zoom-value:focus-visible,
+[data-theme="dark"] .dialog .btn:focus-visible,
+[data-theme="dark"] .doc-name:focus-visible {
+  outline-color: #7aa2f7;
+}
+
+/* High contrast: stronger text, lines, selection and guides. */
+[data-contrast="high"] {
+  --muted: #3f3f46;
+  --line: #8f8b82;
+}
+
+[data-contrast="high"][data-theme="dark"] {
+  --muted: #d6d6e2;
+  --line: #6e6a94;
+}
+
+[data-contrast="high"] .overlay .sel,
+[data-contrast="high"] .overlay .multi-sel {
+  border-width: 2.5px;
+  border-color: #003fd6;
+}
+
+[data-contrast="high"][data-theme="dark"] .overlay .sel,
+[data-contrast="high"][data-theme="dark"] .overlay .multi-sel {
+  border-color: #9db8ff;
+}
+
+[data-contrast="high"] .overlay .ghost {
+  border-color: rgba(0, 63, 214, 0.8);
+}
+
+[data-contrast="high"] .overlay .guide {
+  background: #d6005c;
+}
+
+.grid-overlay,
+.safe-overlay,
+.bleed-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 10px;
+}
+
+.grid-overlay {
+  background-image:
+    repeating-linear-gradient(to right, rgba(20, 20, 40, 0.14) 0 1px, transparent 1px 27px),
+    repeating-linear-gradient(to bottom, rgba(20, 20, 40, 0.14) 0 1px, transparent 1px 27px);
+}
+
+.safe-overlay {
+  border: 2px dashed rgba(220, 60, 60, 0.75);
+}
+
+.bleed-overlay {
+  border: 1px solid rgba(20, 120, 220, 0.8);
+  border-radius: 12px;
+}
+
+.zoom-pill {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  pointer-events: none;
+}
+
+.zoom-pill .inner {
+  pointer-events: auto;
+}
+
+.zoom-pill .inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 4px 10px;
+  font-size: 12px;
+  box-shadow: var(--shadow);
+}
+
+/* Slider and percentage of the zoom pill. */
+.zoom-slider {
+  width: 120px;
+  accent-color: var(--ink, #111111);
+}
+
+.zoom-value {
+  min-width: 48px;
+  padding: 4px 6px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.zoom-value:hover {
+  background: var(--hover, #f1efea);
+}

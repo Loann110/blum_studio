@@ -1,0 +1,12 @@
+# Dependencies and build output (rebuilt by `npm run setup`)
+node_modules/
+ui/dist/
+ui/dist-engine-test/
+server/dist/
+server/browsers.json
+
+# Your designs, media, undo history and sessions
+designs/
+
+# Local scratch
+dev/tmp/

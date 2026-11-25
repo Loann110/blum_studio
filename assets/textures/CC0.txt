@@ -1,0 +1,4 @@
+CC0 1.0 Universal (public domain): procedural paper/grain/concrete/linen
+textures generated for Blum Studio v2 in November 2026 (dev/tmp/gen_textures.py).
+Free for commercial use, no attribution required.
+See https://creativecommons.org/publicdomain/zero/1.0/

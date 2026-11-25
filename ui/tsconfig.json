@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "declaration": false,
+    "sourceMap": false,
+    "allowUnreachableCode": false
+  },
+  "include": [
+    "render/render.ts",
+    "gallery/designs/gallery.ts",
+    "gallery/create.ts",
+    "gallery/designs/recents.ts",
+    "gallery/session/transcript.ts",
+    "gallery/resources.ts",
+    "gallery/session/session.ts",
+    "gallery/session/preview.ts",
+    "gallery/getting-started.ts",
+    "gallery/settings.ts",
+    "engine/validate.ts",
+    "engine/geometry.ts",
+    "engine/history.ts",
+    "engine/index.ts",
+    "editor/api.ts",
+    "editor/editor.ts",
+    "editor/icons.ts",
+    "editor/state.ts"
+  ]
+}

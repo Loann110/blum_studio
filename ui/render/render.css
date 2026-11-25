@@ -1,0 +1,66 @@
+/* Shared stage styles: the story box. Sizes in cqw scale with the box. */
+.blum-stage {
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.blum-stage .bBg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.blum-stage .bGrain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: repeat;
+}
+
+.blum-stage .bText,
+.blum-stage .bShape,
+.blum-stage .bPhoto,
+.blum-stage .bGroup {
+  position: absolute;
+  /* Items rotate about their centre, like the engine, the frame and hit tests. */
+  transform-origin: 50% 50%;
+}
+
+.blum-stage .bText {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+/* Bullet and numbered lists keep the box's face; spacing scales with it. */
+.blum-stage .bText ul,
+.blum-stage .bText ol {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.blum-stage .bText li::marker {
+  color: inherit;
+}
+
+.blum-stage .bShape svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.blum-stage .bPhoto {
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.blum-stage .bPhotoEmpty {
+  position: absolute;
+  border: 0.6cqw dashed rgba(128, 128, 128, 0.6);
+  background: rgba(128, 128, 128, 0.08);
+}
+
+.blum-stage .bGroup {
+  pointer-events: none;
+}

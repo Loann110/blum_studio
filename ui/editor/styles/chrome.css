@@ -1,0 +1,311 @@
+/* Editor chrome: base, top bar and menus. */
+
+/* Editor: layout, rail, panels, canvas, toolbar. Extends gallery theme tokens. */
+/* No default body margin: the app is exactly the window, so nothing scrolls the page. */
+body {
+  margin: 0;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ---- top bar ---- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 12px;
+  background: var(--panel);
+  border-bottom: var(--edge);
+  color: var(--ink);
+  flex: none;
+}
+
+.topbar .brand {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.topbar .brand a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.doc-name {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font: inherit;
+  background: transparent;
+  color: inherit;
+  min-width: 60px;
+  max-width: 260px;
+}
+
+.doc-name:hover {
+  border-color: var(--line);
+}
+
+.format-badge {
+  font-size: 12px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+.dirty-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  flex: none;
+}
+
+.dirty-dot.on {
+  background: #e8a13d;
+}
+
+/* Saved / Saving / Unsaved indicator. */
+.save-state {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.save-state[data-mode="saving"] {
+  color: var(--ink);
+}
+
+.save-state[data-mode="dirty"] {
+  color: #b97a1a;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .save-state[data-mode="dirty"] {
+  color: #f2c069;
+}
+
+.topbar .spacer {
+  flex: 1;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 9px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--muted);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btn.primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--brand-ink);
+}
+
+.btn.primary:hover {
+  background: var(--brand-hover);
+  border-color: var(--brand-hover);
+}
+
+.btn.icon {
+  padding: 6px;
+}
+
+.btn .lucide {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---- menus ---- */
+
+.menu-wrap {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 230px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 6px;
+  z-index: 60;
+}
+
+.menu button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.menu button:hover {
+  background: var(--bg);
+}
+
+.menu kbd {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: inherit;
+}
+
+/* Top bar buttons are drawn keys, like the gallery's (panels keep light buttons). */
+.topbar .btn {
+  border: var(--edge);
+  border-radius: var(--radius);
+  box-shadow: 2px 2px 0 var(--shade);
+  font-weight: 600;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.topbar .btn:hover:not(:disabled) {
+  border-color: var(--ink);
+  background: var(--hover);
+}
+
+.topbar .btn.primary:hover:not(:disabled) {
+  background: var(--brand-hover);
+}
+
+.topbar .btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+/* ---- Block keys ---- */
+/* Same block-game bevel as the gallery buttons, on the top bar only. */
+.topbar .btn {
+  border-radius: 0;
+  box-shadow: inset 2px 2px 0 #ffffff, inset -2px -2px 0 #d5d9de, 2px 2px 0 var(--shade);
+}
+
+.topbar .btn.primary {
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.16), inset -2px -2px 0 rgba(0, 0, 0, 0.35), 2px 2px 0 var(--shade);
+}
+
+.topbar .btn:active:not(:disabled) {
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.12);
+}
+
+/* ---- narrow windows ---- */
+/* The top bar never overflows: labels give way to their icons (each button
+   keeps its name as aria-label), then the format badge and the save note go. */
+.topbar {
+  min-width: 0;
+}
+
+.topbar .btn,
+.topbar .back-link {
+  flex: none;
+}
+
+.doc-name {
+  flex: 1 1 60px;
+}
+
+@media (max-width: 1500px) {
+  .topbar .label {
+    display: none;
+  }
+
+  .topbar .btn,
+  .topbar .back-link {
+    gap: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .format-badge,
+  .topbar .save-state {
+    display: none;
+  }
+}
+
+/* Phones: the top bar wraps onto two rows (logo and name, then every action
+   at full size), so nothing hides off screen; keyboard shortcuts mean nothing
+   on a touch screen. 100dvh keeps the editor inside the phone's real screen. */
+@media (max-width: 600px) {
+  #app {
+    height: 100dvh;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    height: auto;
+    row-gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .doc-name {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .topbar .spacer {
+    flex-basis: 100%;
+    height: 0;
+  }
+
+  .topbar .btn,
+  .topbar .menu-wrap {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .topbar .btn {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .topbar .menu-wrap {
+    display: flex;
+  }
+
+  .topbar .menu-wrap .btn {
+    flex: 1 1 auto;
+  }
+
+  .topbar .keys-btn,
+  .zoom-pill .zoom-slider {
+    display: none;
+  }
+}

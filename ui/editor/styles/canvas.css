@@ -1,0 +1,309 @@
+/* Editor canvas: stage, selection overlay, handles, guides. */
+
+/* ---- canvas ---- */
+
+.canvas-zone {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  background-image: radial-gradient(var(--line) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+.contextbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-height: 46px;
+  padding: 6px 12px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+.contextbar .sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--line);
+  margin: 2px 2px;
+}
+
+.contextbar .tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Lists and numbers in the bar match the font picker: white, same height. */
+.contextbar select,
+.contextbar .stepper-value {
+  width: auto;
+  max-width: 150px;
+  height: 30px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.tool .btn {
+  padding: 5px;
+}
+
+.stepper-value {
+  width: 48px;
+  text-align: center;
+  font-size: 12px;
+  -moz-appearance: textfield;
+}
+
+.stepper-value::-webkit-inner-spin-button,
+.stepper-value::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.bar-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.back-link:hover {
+  background: var(--bg);
+}
+
+.back-link .lucide {
+  width: 15px;
+  height: 15px;
+}
+
+/* The bloom mark leads back to the gallery, like the gallery's own brand. */
+.back-link img {
+  width: 22px;
+  height: 22px;
+  margin-left: -4px;
+}
+
+/* Popovers under tool buttons (spacing, opacity, colours, more). */
+.pop-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.pop-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.pop-panel.right {
+  left: auto;
+  right: 0;
+}
+
+.pop-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* On/off setting: label left, toggle right, in the panel's own text size. */
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--ink, #111);
+}
+
+.switch-row .btn.switch {
+  min-width: 48px;
+  justify-content: center;
+}
+
+.switch-row .btn.switch.on {
+  background: var(--brand, #2563eb);
+  border-color: var(--brand, #2563eb);
+  color: #fff;
+}
+
+/* Colour pills are rounded squares across the app (user's choice), never circles. */
+.swatch-btn,
+.swatch-chip {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 7px;
+  border: 2px solid var(--panel);
+  box-shadow: 0 0 0 1px var(--line);
+  cursor: pointer;
+}
+
+.swatch-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.swatch-chip.on {
+  box-shadow: 0 0 0 2px var(--ink, #111);
+}
+
+.geometry-grid {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.geometry-grid input {
+  width: 100%;
+}
+
+.tool .btn .lucide {
+  width: 15px;
+  height: 15px;
+}
+
+.tool .btn.on {
+  background: var(--pill);
+  border-color: var(--pill);
+  color: var(--pill-ink);
+}
+
+/* Selected buttons inside popover panels (More sections, curve, filters). */
+.pop-panel .btn.on {
+  background: var(--pill);
+  border-color: var(--pill);
+  color: var(--pill-ink);
+}
+
+.canvas-scroll {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 28px;
+}
+
+.stage-box {
+  position: relative;
+  flex: none;
+  box-shadow: var(--shadow);
+  border-radius: 10px;
+}
+
+.stage-box .blum-stage {
+  border-radius: 10px;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+}
+
+.overlay .sel {
+  position: absolute;
+  border: 1.5px solid var(--select);
+  /* The frame math sizes the border box: without this the border grows the
+     box on the right and bottom only, offsetting the frame by its width. */
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.overlay .handle {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  background: #fff;
+  border: 1.5px solid var(--select);
+  border-radius: 50%;
+  box-sizing: border-box;
+  pointer-events: auto;
+  cursor: nwse-resize;
+}
+
+/* Rotate handle: white disc with a turn arrow, 28 px above the frame. */
+.overlay .handle.rotate {
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  cursor: crosshair;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d6417f' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12a9 9 0 1 1-3-6.7L21 8'/%3E%3Cpath d='M21 3v5h-5'/%3E%3C/svg%3E") center / 11px no-repeat;
+}
+
+.overlay .marquee {
+  position: absolute;
+  border: 1px solid var(--select);
+  background: rgba(47, 124, 246, 0.1);
+  pointer-events: none;
+  z-index: 6;
+}
+
+.overlay .handle-stem {
+  position: absolute;
+  width: 1.5px;
+  height: 28px;
+  margin-left: -0.75px;
+  background: var(--select);
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+
+/* Snap guides: pink, as in v1 and the reference. */
+.overlay .guide {
+  position: absolute;
+  background: #ec5f98;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* The active selection shares one frame, like the reference. */
+.overlay .multi-sel {
+  position: absolute;
+  border: 1.5px solid var(--select);
+  /* Same border-box rule as .sel: the frame stays centred on its box. */
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* Faint outlines of the other items while one is selected (v1 shows them):
+   enough to aim and align, quiet enough not to cover the design. */
+.overlay .ghost {
+  position: absolute;
+  border: 1px dashed rgba(47, 124, 246, 0.28);
+  /* Same border-box rule as .sel: the outline stays centred on its box. */
+  box-sizing: border-box;
+  pointer-events: none;
+}

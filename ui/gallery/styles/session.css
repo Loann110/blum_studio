@@ -1,0 +1,166 @@
+/* Session: the design preview on the left, the agent run on the right. */
+
+.session {
+  max-width: none;
+}
+
+.session-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+/* ---- preview (center, live) ---- */
+
+.preview-box {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  min-height: 320px;
+  container-type: inline-size;
+}
+
+.preview-empty {
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  margin: 80px 0;
+}
+
+.session .tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.session .tabs:empty {
+  display: none;
+}
+
+.session .tab {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session .tab.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--panel);
+  font-weight: 600;
+}
+
+/* ---- run (right, streams live) ---- */
+
+.run-pane {
+  position: sticky;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100vh - 140px);
+}
+
+.transcript {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  overflow-y: auto;
+  min-height: 280px;
+  max-height: calc(100vh - 300px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.line.text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.line.tool {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.line.tool .dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+.line.error {
+  color: var(--coral);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+/* The composer label reuses the global skip style, but the sticky run pane
+   would park it on the toolbar: keep it off-screen instead. */
+.composer .skip {
+  top: auto;
+  left: -9999px;
+}
+
+.composer textarea {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 14px;
+  resize: none;
+  field-sizing: content;
+  max-height: 30vh;
+  overflow-y: auto;
+  min-height: 40px;
+}
+
+.composer textarea:focus {
+  border-color: var(--brand);
+  outline: none;
+}
+
+#open-studio {
+  text-decoration: none;
+  display: inline-block;
+}
+
+@media (max-width: 900px) {
+  .session-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .run-pane {
+    position: static;
+    max-height: none;
+  }
+
+  .transcript {
+    max-height: 50vh;
+  }
+}

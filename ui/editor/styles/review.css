@@ -1,0 +1,62 @@
+/* Editor review panel: care score and findings. */
+
+/* ---- findings ---- */
+
+.review-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* The care score reads at a glance: green good, amber fair, red low. */
+.score-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+
+.score-chip[data-grade="good"] {
+  background: #e3f5ea;
+  border-color: #b9e4c9;
+  color: #17723f;
+}
+
+.score-chip[data-grade="fair"] {
+  background: #fbf1df;
+  border-color: #f1d9a8;
+  color: #8a5a12;
+}
+
+.score-chip[data-grade="low"] {
+  background: #fdeaea;
+  border-color: #f5c2c3;
+  color: #b42d32;
+}
+
+.finding {
+  font-size: 12px;
+  border-left: 3px solid var(--muted);
+  padding: 4px 8px;
+  margin-bottom: 6px;
+  background: var(--bg);
+  border-radius: 0 8px 8px 0;
+}
+
+.finding.warn {
+  border-color: #e8a13d;
+}
+
+.finding.error {
+  border-color: #d63c3c;
+}
+
+.finding.info {
+  border-color: var(--brand);
+}

@@ -1,0 +1,485 @@
+/* Gallery shell: base, sidebar and main column (every gallery page). */
+
+/* Gallery: sidebar plus card grid, in the Vao2 spirit. */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.skip {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 10;
+  background: var(--ink);
+  color: var(--panel);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  transition: top 0.15s ease;
+}
+
+.skip:focus-visible {
+  top: 12px;
+}
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---- sidebar ---- */
+/* A light grey rail closed by a charcoal edge, like a drawn panel. */
+.sidebar {
+  width: 248px;
+  flex: none;
+  background: var(--side-bg);
+  color: var(--side-ink);
+  border-right: var(--edge);
+  padding: 22px 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 21px;
+  letter-spacing: -0.03em;
+  padding: 0 8px;
+  color: var(--side-ink);
+  text-decoration: none;
+}
+
+.brand img {
+  width: 30px;
+  height: 30px;
+}
+
+.brand span b {
+  color: inherit;
+  font-weight: 700;
+}
+
+.tagline {
+  margin: 2px 0 14px;
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--side-muted);
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--side-ink);
+  text-decoration: none;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+}
+
+.nav svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  stroke-width: 2.25;
+}
+
+.nav:hover {
+  background: var(--side-hover);
+}
+
+/* Active page: a raised key, outlined, with a hard shadow. */
+.nav.active {
+  background: var(--surface);
+  border: var(--edge);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+
+.side-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--side-line);
+}
+
+/* "+ Create": the one amber key of the app; it presses down on click. */
+.create-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--amber);
+  color: var(--ink);
+  border: var(--edge);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: var(--radius);
+  padding: 9px 10px;
+  margin: 0 4px 10px 0;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.create-cta:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--shade);
+}
+
+.create-cta:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--shade);
+}
+
+/* Recent creation sessions under the nav. */
+.recents {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+
+.recents h2 {
+  margin: 0;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--side-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.recents-empty {
+  margin: 0;
+  padding: 0 8px;
+  font-size: 12px;
+  color: var(--side-muted);
+}
+
+.recent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--side-ink);
+  text-decoration: none;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.recent:hover {
+  background: var(--side-hover);
+}
+
+.recent-thumb {
+  width: 34px;
+  height: 44px;
+  flex: none;
+  border-radius: 5px;
+  border: 1px solid var(--side-line);
+  background: var(--side-hover);
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+.recent-info {
+  min-width: 0;
+}
+
+.recent-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-agent {
+  font-size: 12px;
+  color: var(--side-muted);
+}
+
+/* Buttons are drawn keys: charcoal outline, hard shadow, they press down. */
+.ghost,
+.mini,
+.primary {
+  border: var(--edge);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.ghost:active,
+.mini:active,
+.primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--shade);
+}
+
+.ghost {
+  background: var(--surface);
+  color: var(--ink);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ghost:hover,
+.mini:hover {
+  background: var(--hover);
+}
+
+/* Small button (copy, open, tabs actions), shared by every page. */
+.mini {
+  background: var(--surface);
+  color: var(--ink);
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 2px 2px 0 var(--shade);
+}
+
+.mini.go {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--brand-ink);
+  font-weight: 600;
+}
+
+/* ---- main ---- */
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: 26px 30px 60px;
+  max-width: 1400px;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-bottom: 18px;
+}
+
+.titles h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* Counts and status lines read like a technical caption. */
+.count {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  margin: 4px 0 0;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.primary {
+  background: var(--brand);
+  color: var(--brand-ink);
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.primary:hover {
+  background: var(--brand-hover);
+}
+
+.primary:disabled,
+.mini:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+/* Any other format: one joined control (format list, custom size, create). */
+.format-picker {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 3px 3px 3px 12px;
+  gap: 6px;
+}
+
+.format-picker label {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.format-picker select,
+.format-picker input {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 500 13px "Inter", system-ui, sans-serif;
+  padding: 4px 2px;
+  min-width: 0;
+}
+
+.format-picker input {
+  width: 64px;
+  border-bottom: 1px solid var(--line);
+}
+
+.format-picker .primary {
+  padding: 5px 12px;
+}
+
+.status {
+  min-height: 20px;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+/* Visible keyboard focus everywhere it matters (every gallery page). */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.sidebar a:focus-visible,
+.sidebar button:focus-visible {
+  outline-color: var(--pollen);
+}
+
+/* ---- Block keys ---- */
+/* A light touch of block-game buttons: square corners and a bevel (light
+   edge top-left, dark edge bottom-right) on everything you can press.
+   Cards, colours and layout stay as they are. */
+body .create-cta,
+body .primary,
+body .ghost,
+body .mini,
+body .pill,
+body .pills select,
+body .nav.active {
+  border-radius: 0;
+}
+
+body .create-cta {
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.45), inset -2px -3px 0 rgba(120, 72, 10, 0.28), var(--shadow);
+}
+
+body .primary,
+body .pill.on {
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.16), inset -2px -2px 0 rgba(0, 0, 0, 0.35), var(--shadow-sm);
+}
+
+body .ghost,
+body .mini,
+body .pill:not(.on),
+body .pills select,
+body .nav.active {
+  box-shadow: inset 2px 2px 0 #ffffff, inset -2px -2px 0 #d5d9de, var(--shadow-sm);
+}
+
+body .create-cta:active,
+body .primary:active,
+body .ghost:active,
+body .mini:active,
+body .pill:active {
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.12);
+}
+
+/* The sidebar is the same on every page: it stays still across page changes. */
+.sidebar {
+  view-transition-name: sidebar;
+}
+
+/* ---- phones ---- */
+/* Under 760 px the sidebar becomes a compact header above the page: brand,
+   one row of nav and the + Create key; the main column takes the full width. */
+@media (max-width: 760px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: auto;
+    height: auto;
+    position: static;
+    flex-direction: column;
+    border-right: 0;
+    border-bottom: var(--edge);
+    padding: 14px 16px 10px;
+  }
+
+  .tagline,
+  .recents {
+    display: none;
+  }
+
+  .sidebar nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .side-foot {
+    margin-top: 0;
+  }
+
+  .main {
+    padding: 18px 16px 48px;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar {
+    flex-wrap: wrap;
+  }
+
+  .format-picker {
+    flex-wrap: wrap;
+  }
+}

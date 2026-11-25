@@ -1,0 +1,199 @@
+/* Theme tokens: light default, dark under [data-theme="dark"]. */
+/* Shared by the gallery and the editor: the single place for UI fonts,
+// so the editor can never fall back to a serif again. */
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  color: var(--ink);
+}
+
+/* Form controls do not inherit the page font by default: make them. */
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+/* Links in running text take the brand colour, not the browser default. */
+.main p a {
+  color: var(--navy);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.main p a:hover {
+  text-decoration: underline;
+}
+
+:root {
+  /* "Technical drawing": cool greys, charcoal outlines, hard offset shadows
+     (no blur), square-ish corners. Colour is rare: amber for the one create
+     action, orange for the canvas selection, navy for links and focus. */
+  --bg: #e9ebee;
+  --panel: #f6f7f8;
+  --surface: #ffffff;
+  --ink: #2b2f36;
+  --muted: #6b717b;
+  --line: #cfd3d9;
+  --hover: #e0e3e7;
+  --accent: #2b2f36;
+  --pill: #2b2f36;
+  --pill-ink: #ffffff;
+  --edge: 1px solid #9ba2ac;
+  --shade: #d3d7dd;
+  --shadow: 3px 3px 0 var(--shade);
+  --shadow-sm: 2px 2px 0 var(--shade);
+  --radius: 4px;
+  --range-fill: var(--ink);
+  --brand: #2b2f36;
+  --brand-hover: #3b4049;
+  --brand-ink: #ffffff;
+  --brand-soft: #dfe3e8;
+  --brand-deep: #2b2f36;
+  --amber: #f0a33a;
+  --navy: #2f4f7f;
+  --select: #e8702a;
+  --pollen: var(--amber);
+  --petal: var(--select);
+  --coral: #d24b42;
+  --sun: var(--amber);
+  /* Gallery sidebar: a light grey rail with a charcoal edge. */
+  --side-bg: #f3f4f6;
+  --side-ink: var(--ink);
+  --side-muted: var(--muted);
+  --side-hover: #e4e7eb;
+  --side-line: var(--line);
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, monospace;
+}
+
+/* Sliders, the same everywhere (panels, popovers, zoom): a thin rounded
+   track, the filled part in blue (--val is kept up to date by the editor),
+   a white knob ringed in blue. */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  background: transparent;
+  cursor: pointer;
+  --val: 50%;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--range-fill) var(--val), var(--line) var(--val));
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+input[type="range"]::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--range-fill);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--range-fill);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.12s ease;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--range-fill);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+input[type="range"]:hover::-webkit-slider-thumb,
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--range-fill);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ---- page changes ---- */
+/* Each page is its own HTML file: a cross-document view transition keeps the
+   old page on screen until the new one paints, so navigating never flashes. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.12s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* ---- drop-down lists ---- */
+/* Where the browser allows it (Chromium's customizable select), the open list
+   takes the app's look: a drawn panel with the hard shadow, roomy options and
+   the selection in the select colour. Other browsers keep their native list. */
+@supports (appearance: base-select) {
+  select,
+  ::picker(select) {
+    appearance: base-select;
+  }
+
+  select::picker-icon {
+    color: var(--muted);
+    transition: rotate 0.15s ease;
+  }
+
+  select:open::picker-icon {
+    rotate: 180deg;
+  }
+
+  ::picker(select) {
+    margin-top: 4px;
+    padding: 4px;
+    max-height: min(60vh, 420px);
+    background: var(--surface);
+    color: var(--ink);
+    border: var(--edge);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    font: 500 13px "Inter", system-ui, sans-serif;
+  }
+
+  select option {
+    padding: 7px 10px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  select option:hover,
+  select option:focus-visible {
+    background: var(--hover);
+    outline: none;
+  }
+
+  select option:checked {
+    background: var(--brand-soft);
+    font-weight: 700;
+  }
+
+  select option::checkmark {
+    color: var(--select);
+  }
+}

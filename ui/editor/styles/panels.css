@@ -1,0 +1,261 @@
+/* Editor panels: layers, sticker and photo grids, replace hint, findings. */
+
+/* ---- layers ---- */
+
+.layer-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 5px 6px;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.layer-row:hover {
+  background: var(--bg);
+}
+
+.layer-row.selected {
+  border-color: var(--select);
+  background: var(--bg);
+}
+
+.layer-row .name {
+  flex: 0 1 auto;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.layer-row .kind {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* What a text layer says, after its name; takes the rest of the row. */
+.layer-row .peek {
+  flex: 1;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Import button in the Images panel (the file input itself stays hidden). */
+.upload-btn {
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 10px;
+  border-style: dashed;
+}
+
+.upload-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.layer-row.child {
+  margin-left: 18px;
+}
+
+.layer-row .btn {
+  padding: 3px;
+  border: 0;
+}
+
+.layer-row .btn .lucide {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---- sticker / photo grids ---- */
+
+.thumb-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.thumb-grid figure {
+  margin: 0;
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg);
+  cursor: pointer;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Thousands of tiles share one grid: skip rendering the off-screen ones
+     so appending the catalogue never re-lays the whole panel. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
+}
+
+.thumb-grid figure:hover {
+  border-color: var(--muted);
+}
+
+.thumb-grid img {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+}
+
+.thumb-grid figure.photo {
+  aspect-ratio: 3 / 4;
+}
+
+.thumb-grid figure.photo img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+}
+
+.thumb-grid .fav {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  border: 0;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #999;
+}
+
+.thumb-grid .fav .lucide {
+  width: 13px;
+  height: 13px;
+}
+
+.thumb-grid .fav.on {
+  color: #e8a13d;
+}
+
+/* Virtual grid spacers: full-width rows giving the scroller its total
+   height while only the visible tiles are in the DOM. */
+.thumb-grid .vg-pad {
+  grid-column: 1 / -1;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.tabs button {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--muted);
+  border-radius: 8px;
+  font-size: 12px;
+  padding: 5px 2px;
+  cursor: pointer;
+}
+
+.tabs button.active {
+  background: var(--pill);
+  border-color: var(--pill);
+  color: var(--pill-ink);
+}
+
+/* ---- replace mode hint (photo / sticker swap) ---- */
+
+.replace-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  background: var(--pill);
+  color: var(--pill-ink);
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin-bottom: 10px;
+}
+
+.replace-hint span {
+  flex: 1;
+}
+
+.shape-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.shape-grid button {
+  min-height: 64px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 2px;
+}
+
+.shape-grid .shape-name {
+  font-size: 10px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.shape-grid button:hover {
+  border-color: var(--muted);
+}
+
+.shape-grid .lucide {
+  width: 20px;
+  height: 20px;
+}
+
+.swatch-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  cursor: pointer;
+  background: var(--bg);
+}
+
+.swatch-card:hover {
+  border-color: var(--muted);
+}
+
+.swatch-card .swatches {
+  display: flex;
+  height: 34px;
+}
+
+.swatch-card .swatches span {
+  flex: 1;
+}
+
+.swatch-card .pname {
+  font-size: 12px;
+  padding: 5px 8px;
+}
