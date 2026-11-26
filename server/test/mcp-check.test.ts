@@ -62,3 +62,13 @@ test("text overflow uses the real font and the wrap", async () => {
   report = JSON.parse(await checkDesignTool(made.id)) as { findings: Array<{ check: string }> };
   assert.ok(report.findings.some((f) => f.check === "text_overflow"), JSON.stringify(report));
 });
+
+test("short box reports overflow when the width fits", async () => {
+  const made = JSON.parse(createDesignTool("Short", "story")) as { id: string };
+  await applyOpsTool(made.id, [{
+    op: "add",
+    item: { id: "short", name: "short", type: "text", x: 540, y: 900, width: 900, height: 40, props: { text: "Hi", font: "Inter", size: 96, color: "#111111" } },
+  }]);
+  const report = JSON.parse(await checkDesignTool(made.id)) as { findings: Array<{ check: string; item: string }> };
+  assert.ok(report.findings.some((f) => f.check === "text_overflow" && f.item === "short"), JSON.stringify(report));
+});

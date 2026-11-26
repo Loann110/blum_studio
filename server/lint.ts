@@ -8,15 +8,11 @@ type Json = Record<string, unknown>;
 type Finding = { check: string; level: string; item: string; message: string };
 export type LintReport = { findings: Finding[]; score: number };
 
-function findItem(items: unknown, id: string): Json | null {
+function collectTexts(items: unknown, out: Json[]): void {
   for (const it of (items as Json[]) ?? []) {
-    if (it?.id === id) return it;
-    if (it?.type === "group") {
-      const hit = findItem(it.items ?? it.children, id);
-      if (hit) return hit;
-    }
+    if (it?.type === "group") collectTexts(it.items ?? it.children, out);
+    else if (it?.type === "text" && it?.visible !== false) out.push(it);
   }
-  return null;
 }
 
 function score(findings: Finding[]): number {
@@ -38,7 +34,7 @@ async function overflows(item: Json): Promise<boolean | null> {
     Boolean(p.italic),
     Number(p.letterSpacing ?? 0),
     width,
-  );
+  ).catch(() => null); // no browser: keep the engine estimate rather than losing the whole lint
   if (wrap === null) return null;
   const height = wrap.lines * size * Number(p.lineHeight ?? 1.2);
   return wrap.widest > width * 1.02 || height > Number(item.height ?? 0) * 1.05;
@@ -46,16 +42,26 @@ async function overflows(item: Json): Promise<boolean | null> {
 
 export async function lintMeasured(design: Json): Promise<LintReport> {
   const report = lintDesign(design) as unknown as LintReport;
+  const texts: Json[] = [];
+  collectTexts(design.items, texts);
+  const measured = new Map<string, boolean | null>();
+  for (const item of texts) measured.set(String(item.id), await overflows(item));
   const kept: Finding[] = [];
+  const seen = new Set<string>();
   for (const f of report.findings) {
     if (f.check !== "text_overflow") {
       kept.push(f);
       continue;
     }
-    const item = findItem(design.items, f.item);
-    const over = item ? await overflows(item) : null;
+    seen.add(f.item);
+    const over = measured.get(f.item);
     if (over === false) continue;
     kept.push(over ? { ...f, message: `'${f.item}' overflows its box with the real font: enlarge the box or shorten/shrink the text` } : f);
+  }
+  // The estimate misses short boxes, so texts it cleared still need a finding.
+  for (const item of texts) {
+    const id = String(item.id);
+    if (!seen.has(id) && measured.get(id)) kept.push({ check: "text_overflow", level: "warn", item: id, message: `'${id}' overflows its box with the real font: enlarge the box or shorten/shrink the text` });
   }
   return { findings: kept, score: score(kept) };
 }
