@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import { removeBackground } from "../../export/cutout.js";
 import { downloadImage, importImage, UnknownDesign } from "../../store.js";
-import { badDesignId, toolError } from "../trust.js";
+import { badDesignId, refuseTemplate, toolError } from "../trust.js";
 
 export async function importImageTool(
   id: unknown,
@@ -12,6 +12,8 @@ export async function importImageTool(
 ): Promise<string> {
   const problem = badDesignId(id);
   if (problem) return toolError(problem);
+  const refused = refuseTemplate(id);
+  if (refused) return refused;
   if (typeof source !== "string" || !source.trim()) {
     return toolError("source must be an http(s) URL or a local file path (use list_resources('photos') for URLs)");
   }

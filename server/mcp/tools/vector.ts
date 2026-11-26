@@ -2,7 +2,7 @@
 // same call, so drawing costs one round trip instead of two.
 import crypto from "node:crypto";
 import type { Design } from "../../store.js";
-import { loadDesign, toolError, type Content } from "../trust.js";
+import { loadDesign, refuseTemplate, toolError, type Content } from "../trust.js";
 import { applyOpsTool } from "./ops.js";
 import { previewPng } from "./preview.js";
 
@@ -20,6 +20,8 @@ export async function drawSvgTool(
   height: unknown,
   name: unknown = "",
 ): Promise<string | Content[]> {
+  const refused = refuseTemplate(designId);
+  if (refused) return refused;
   const cx = Number(x);
   const cy = Number(y);
   const w = positive(width);

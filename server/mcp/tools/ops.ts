@@ -4,7 +4,7 @@ import { applyOps } from "../../../ui/engine/index.js";
 import { historyFor } from "../../histories.js";
 import { saveDesign } from "../../store.js";
 import { touchedIds, walkIds } from "../compact.js";
-import { badSticker, loadDesign, toolError, withDesignLock } from "../trust.js";
+import { badSticker, loadDesign, refuseTemplate, toolError, withDesignLock } from "../trust.js";
 
 type Op = Record<string, unknown>;
 
@@ -61,6 +61,8 @@ function rejectSilentShapes(ops: Op[]): string | null {
 }
 
 export async function applyOpsTool(id: unknown, ops: unknown): Promise<string> {
+  const refused = refuseTemplate(id);
+  if (refused) return refused;
   const { err } = loadDesign(id);
   if (err) return err;
   if (!Array.isArray(ops) || !ops.length) {
@@ -92,6 +94,8 @@ export async function applyOpsTool(id: unknown, ops: unknown): Promise<string> {
 }
 
 export async function undoTool(id: unknown): Promise<string> {
+  const refused = refuseTemplate(id);
+  if (refused) return refused;
   const { err } = loadDesign(id);
   if (err) return err;
   return withDesignLock(id as string, () => {
@@ -109,6 +113,8 @@ export async function undoTool(id: unknown): Promise<string> {
 }
 
 export async function redoTool(id: unknown): Promise<string> {
+  const refused = refuseTemplate(id);
+  if (refused) return refused;
   const { err } = loadDesign(id);
   if (err) return err;
   return withDesignLock(id as string, () => {

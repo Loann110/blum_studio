@@ -52,7 +52,9 @@ export function sniffImage(data: Buffer): string | null {
 /* ---- ids ---- */
 
 export function slugify(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "design";
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "design";
+  // example-* ids are the shipped templates: a design named "Example ..." must not pose as one.
+  return /^example(-|$)/.test(slug) ? `design-${slug}` : slug;
 }
 
 /* ---- atomic write ---- */

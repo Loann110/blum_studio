@@ -2,7 +2,7 @@
 // paths, sticker refs), so a crafted id can never walk out of designs/.
 import fs from "node:fs";
 import path from "node:path";
-import { getDesign, UnknownDesign, withDesignLock, type Design } from "../store.js";
+import { getDesign, isTemplateId, UnknownDesign, withDesignLock, type Design } from "../store.js";
 import { designsDir } from "../paths.js";
 import { searchStickers } from "../resources.js";
 
@@ -34,6 +34,15 @@ export function badDesignId(id: unknown): string | null {
     return `bad design id ${JSON.stringify(id)} (use the id from create_design or list_designs)`;
   }
   return null;
+}
+
+// Shipped examples are starting points, not drafts: every MCP write refuses
+// them here, so an agent starts from create_design instead of changing one.
+export function refuseTemplate(id: unknown): string {
+  if (typeof id === "string" && isTemplateId(id)) {
+    return toolError(`'${id}' is an example design (examples are read-only: start from create_design instead)`);
+  }
+  return "";
 }
 
 // Fresh design from disk plus an error reply ("" when fine). Reads the file
