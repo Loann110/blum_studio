@@ -71,6 +71,8 @@ function flatten(items: Item[], px: number, py: number, pa: number, out: Placed[
   const cosA = Math.cos(rad);
   const sinA = Math.sin(rad);
   for (const it of items) {
+    // A hidden group hides its children too: nothing under it is checked.
+    if (!it.visible) continue;
     const absolute: Item = {
       ...it,
       x: px + it.x * cosA - it.y * sinA,
@@ -134,7 +136,7 @@ function coloursBehind(
     let found: string[] | null | undefined;
     for (let j = index - 1; j >= 0 && found === undefined; j--) {
       const under = flat[j];
-      if (!under.item.visible || under.item.type === 'group' || under.item.type === 'text') continue;
+      if (under.item.type === 'group' || under.item.type === 'text') continue;
       if (!contains(under.absolute, x, y)) continue;
       if (under.item.type === 'shape') {
         const s = under.item.props as ShapeProps;
@@ -206,17 +208,12 @@ export function lintModel(doc: Design): LintReport {
   const safe = safeBox(doc);
   const canvas = canvasBox(doc);
 
-  let visibleCount = 0;
-  for (const p of flat) {
-    if (p.item.visible) visibleCount++;
-  }
-  if (visibleCount === 0) {
+  if (flat.length === 0) {
     add('empty_design', 'warn', '', 'This design is empty: add a title and a visual');
   }
 
   for (const p of flat) {
     const it = p.item;
-    if (!it.visible) continue;
     const b = boundingBox(p.absolute);
     // Only text must stay readable; pictures and shapes may bleed on purpose.
     if (it.type !== 'text') {

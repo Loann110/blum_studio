@@ -368,6 +368,12 @@ describe('lint: zones are about text', () => {
     const t: Json = { id: 't', name: 't', type: 'text', x: 540, y: 60, width: 600, height: 80, props: { text: 'Hi', size: 48, color: '#111111' } };
     assert.ok(checks(design([t])).includes('unsafe_zone'));
   });
+
+  it('a hidden group is not checked, and hiding everything leaves an empty design', () => {
+    const tiny = (id: string): Json => ({ id, name: id, type: 'text', x: 0, y: 0, width: 300, height: 40, props: { text: '', size: 10, color: '#111111' } });
+    const hidden: Json = { id: 'g', name: 'g', type: 'group', x: 540, y: 960, width: 300, height: 100, visible: false, items: [tiny('a'), tiny('b')] };
+    assert.deepEqual(checks(design([hidden])), ['empty_design']);
+  });
 });
 
 describe('lint: overlaps warn only when reading suffers', () => {

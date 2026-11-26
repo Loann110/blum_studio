@@ -10,8 +10,9 @@ export type LintReport = { findings: Finding[]; score: number };
 
 function collectTexts(items: unknown, out: Json[]): void {
   for (const it of (items as Json[]) ?? []) {
-    if (it?.type === "group") collectTexts(it.items ?? it.children, out);
-    else if (it?.type === "text" && it?.visible !== false) out.push(it);
+    if (!it || it.visible === false) continue;
+    if (it.type === "group") collectTexts(it.items ?? it.children, out);
+    else if (it.type === "text") out.push(it);
   }
 }
 
