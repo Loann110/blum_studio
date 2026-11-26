@@ -15,7 +15,7 @@
     "copy:ort": "node -e \"const fs=require('fs');fs.mkdirSync('dist/ort',{recursive:true});for(const f of ['ort.wasm.min.mjs','ort-wasm-simd-threaded.mjs','ort-wasm-simd-threaded.wasm'])fs.copyFileSync('node_modules/onnxruntime-web/dist/'+f,'dist/ort/'+f)\""
   },
   "devDependencies": {
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.28.2",
     "typescript": "^5.6.0"
   },
   "dependencies": {
