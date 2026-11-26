@@ -1,6 +1,7 @@
 // Engine text field updates.
 import type { Item, TextProps } from '../../model.js';
 import { isColor, validFieldKey } from '../../names.js';
+import { isSafeImageSrc } from '../../sources.js';
 import { fail } from '../../errors.js';
 import { needFor } from './common.js';
 
@@ -71,6 +72,7 @@ export function applyTextField(
       } else if (key === 'label') {
         t.label = s;
       } else if (key === 'textFill') {
+        if (s !== '' && !isSafeImageSrc(s)) fail(`bad textFill '${s}'`);
         t.textFill = s;
       } else {
         if (s !== '' && !isColor(s)) fail(`bad color '${s}'`);

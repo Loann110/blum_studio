@@ -657,3 +657,55 @@ describe('removed palette', () => {
     assert.ok(!('palette' in (applyOps(old, []) as Json)));
   });
 });
+
+describe('safe image sources', () => {
+  const story = (): Json => ({
+    version: 1, name: 'T', format: 'story',
+    background: { kind: 'color', color: '#ffffff' }, items: [],
+  });
+  const photo = (src: string): Json => ({
+    op: 'add',
+    item: {
+      id: 'p', name: 'p', type: 'photo', x: 540, y: 960, width: 600, height: 600,
+      props: { src, mask: 'rect' },
+    },
+  });
+  const text = (textFill: string): Json => ({
+    op: 'add',
+    item: {
+      id: 't', name: 't', type: 'text', x: 540, y: 960, width: 800, height: 200,
+      props: { text: 'Hi', font: 'Anton', size: 200, color: '#ffffff', textFill },
+    },
+  });
+  const bg = (image: string): Json => ({
+    op: 'set_background', background: { kind: 'image', image },
+  });
+
+  it('local and escaping sources fail, media, assets and remote pass', () => {
+    const bad = ['file:///x.png', '/etc/x.png', 'C:\\x.png', 'media/../../x.png', 'textures/%2e%2e/x.png', 'designs/media/../x.png'];
+    for (const src of bad) {
+      assert.throws(() => applyOps(story(), [photo(src)]), /bad image src/);
+      assert.throws(() => applyOps(story(), [text(src)]), /bad textFill/);
+      assert.throws(() => applyOps(story(), [bg(src)]), /bad background image/);
+    }
+    const seeded = applyOps(story(), [photo('media/a.png'), text('media/a.png')]) as Json;
+    for (const src of bad) {
+      assert.throws(() => applyOps(seeded, [{ op: 'update', id: 'p', patch: { src } }]), /bad image src/);
+      assert.throws(() => applyOps(seeded, [{ op: 'update', id: 't', patch: { textFill: src } }]), /bad textFill/);
+    }
+    const good = [
+      'media/a.png',
+      'designs/media/a.png',
+      'textures/paper-white.jpg',
+      'stickers/blum/pineapple.svg',
+      'https://example.com/a.jpg',
+      'data:image/png;base64,iVBORw0KGgo=',
+    ];
+    for (const src of good) {
+      const out = applyOps(story(), [photo(src), text(src), bg(src)]) as Json;
+      assert.equal(((out.items as Json[])[0].props as Json).src, src);
+      assert.equal(((out.items as Json[])[1].props as Json).textFill, src);
+      assert.equal((out.background as Json).image, src);
+    }
+  });
+});

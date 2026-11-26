@@ -50,6 +50,8 @@ function textPhotoFill(
   const src = (p.textFill ?? '').trim();
   if (!src) return '';
   const url = resolveSrc(src, assetsBase, mediaBase);
+  // Refused sources stay flat: transparent over no image would vanish.
+  if (!url) return '';
   return `background-image:url("${esc(url)}");background-size:cover;background-position:center`
     + `;-webkit-background-clip:text;background-clip:text;color:transparent`;
 }

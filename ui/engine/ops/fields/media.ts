@@ -1,6 +1,7 @@
 // Engine sticker, vector and image field updates.
 import type { Item, StickerProps, ImageProps, VectorProps } from '../../model.js';
 import { parseVector } from '../../vector.js';
+import { isSafeImageSrc } from '../../sources.js';
 import { isColor } from '../../names.js';
 import { fail } from '../../errors.js';
 import { applyFilterField, applyShadow, needFor } from './common.js';
@@ -90,6 +91,7 @@ export function applyImageField(
       }
       if (key === 'src') {
         if (s === '') fail('src must not be empty');
+        if (!isSafeImageSrc(s)) fail(`bad image src '${s}'`);
         im.src = s;
       } else {
         im.fit = s;

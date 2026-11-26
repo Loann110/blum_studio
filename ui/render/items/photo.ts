@@ -4,6 +4,7 @@ import { esc, joinUrl, num } from '../util.js';
 import { dropShadow } from './shape.js';
 import { resolveColor } from '../colour.js';
 import { parseVector, serializeVector } from '../../engine/vector.js';
+import { isSafeImageSrc } from '../../engine/sources.js';
 
 // A vector is shown as an image (data URI): even a missed check could not run
 // script or load anything from there. An invalid one shows the empty placeholder.
@@ -58,11 +59,14 @@ function vignetteOverlay(p: FilterProps): string {
 }
 
 export function resolveSrc(src: string, assetsBase: string, mediaBase: string): string {
+  // Refused sources render nothing: hand-edited files never reach the engine.
+  if (!isSafeImageSrc(src)) return '';
   if (src.startsWith('media/')) return joinUrl(mediaBase, src.slice('media/'.length));
   if (src.startsWith('designs/media/')) {
     return joinUrl(mediaBase, src.slice('designs/media/'.length));
   }
-  if (/^(https?:|file:|data:|\/)/.test(src)) return src;
+  // A vetted relative path never holds a colon, so one means remote or data.
+  if (src.includes(':')) return src;
   return joinUrl(assetsBase, src);
 }
 

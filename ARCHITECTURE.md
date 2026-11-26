@@ -58,6 +58,7 @@ Pure TypeScript with no DOM. Runs in the browser and in Node.
 | `index.ts` | The public API. Everything outside the engine imports from here. |
 | `model.ts`, `formats.ts` | Document types; page formats and safe margins. |
 | `names.ts` | Rules for colour, shape, pattern and filter names. |
+| `sources.ts` | The one image-source rule (media, bundled assets, remote, image data URIs), shared with the render. |
 | `validate.ts` | Checks for items and whole documents. |
 | `json/` | Reading and writing designs, with defaults. |
 | `ops/op.ts`, `ops/apply.ts` | Parsing an op batch and applying it. |
