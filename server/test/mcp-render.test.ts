@@ -49,7 +49,7 @@ test("export writes 1080x1920", async () => {
   const made = JSON.parse(createDesignTool("Exported", "story")) as { id: string };
   await applyOpsTool(made.id, [{ op: "add", item: text("t1") }]);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "blum-exp-"));
-  const out = path.join(dir, "out.png");
+  const out = path.join(fs.realpathSync(dir), "out.png");
   const got = JSON.parse(await exportPngTool(made.id, out)) as { path: string };
   assert.equal(got.path, out);
   assert.deepEqual(pngSize(fs.readFileSync(out)), [1080, 1920]);
@@ -62,7 +62,7 @@ test("export a5 is 1748x2480 at 2x", async () => {
   const made = JSON.parse(createDesignTool("Flyer", "a5")) as { id: string };
   await applyOpsTool(made.id, [{ op: "add", item: text("t1") }]);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "blum-a5-"));
-  const out = path.join(dir, "a5.png");
+  const out = path.join(fs.realpathSync(dir), "a5.png");
   const got = JSON.parse(await exportPngTool(made.id, out)) as { path: string };
   assert.equal(got.path, out);
   assert.deepEqual(pngSize(fs.readFileSync(out)), [1748, 2480]);
@@ -72,7 +72,7 @@ test("export_pdf keeps the exact page size with vector text", async () => {
   const made = JSON.parse(createDesignTool("Flyer", "a5")) as { id: string };
   await applyOpsTool(made.id, [{ op: "add", item: text("t1") }]);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "blum-pdf-"));
-  const out = path.join(dir, "a5.pdf");
+  const out = path.join(fs.realpathSync(dir), "a5.pdf");
   const got = JSON.parse(await exportPdfTool(made.id, out)) as { path: string };
   assert.equal(got.path, out);
   const raw = fs.readFileSync(out, "latin1");
@@ -89,6 +89,36 @@ test("export_pdf keeps the exact page size with vector text", async () => {
   assert.ok(err(await exportPdfTool(made.id, path.join(dir, "a5.png"))).includes("must end with '.pdf'"));
 });
 
+test("export to a taken out_path keeps it and writes -2", async () => {
+  const made = JSON.parse(createDesignTool("Taken", "story")) as { id: string };
+  await applyOpsTool(made.id, [{ op: "add", item: text("t1") }]);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "blum-taken-"));
+  fs.mkdirSync(path.join(dir, "sub"));
+  const real = fs.realpathSync(dir);
+  // Uncollapsed on purpose: the reply must carry the real path.
+  const out = `${dir}${path.sep}sub${path.sep}..${path.sep}poster.png`;
+  const sentinel = Buffer.from("SENTINEL-ORIGINAL");
+  fs.writeFileSync(out, sentinel);
+  const got = JSON.parse(await exportPngTool(made.id, out)) as { path: string };
+  assert.equal(got.path, path.join(real, "poster-2.png"));
+  assert.ok(fs.readFileSync(path.join(real, "poster.png")).equals(sentinel));
+  assert.deepEqual(pngSize(fs.readFileSync(got.path)), [1080, 1920]);
+});
+
+test("two exports racing for one out_path both land", async () => {
+  const made = JSON.parse(createDesignTool("Race", "story")) as { id: string };
+  await applyOpsTool(made.id, [{ op: "add", item: text("t1") }]);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "blum-race-"));
+  const out = path.join(fs.realpathSync(dir), "race.png");
+  const [a, b] = await Promise.all([exportPngTool(made.id, out), exportPngTool(made.id, out)]);
+  const pa = (JSON.parse(a) as { path: string }).path;
+  const pb = (JSON.parse(b) as { path: string }).path;
+  assert.notEqual(pa, pb);
+  assert.deepEqual(new Set([pa, pb]), new Set([out, path.join(fs.realpathSync(dir), "race-2.png")]));
+  assert.deepEqual(pngSize(fs.readFileSync(pa)), [1080, 1920]);
+  assert.deepEqual(pngSize(fs.readFileSync(pb)), [1080, 1920]);
+});
+
 test("export post is 1080x1350", async () => {
   const made = JSON.parse(createDesignTool("Affiche", "post")) as { id: string };
   await applyOpsTool(made.id, [
@@ -98,7 +128,7 @@ test("export post is 1080x1350", async () => {
     { op: "lock", id: "t1", locked: false },
   ]);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "blum-post-"));
-  const out = path.join(dir, "post.png");
+  const out = path.join(fs.realpathSync(dir), "post.png");
   const got = JSON.parse(await exportPngTool(made.id, out)) as { path: string };
   assert.equal(got.path, out);
   assert.deepEqual(pngSize(fs.readFileSync(out)), [1080, 1350]);

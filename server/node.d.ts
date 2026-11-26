@@ -39,6 +39,9 @@ declare module "node:fs" {
   export function rmSync(p: string, opts?: { recursive?: boolean; force?: boolean }): void;
   export function readdirSync(p: string): string[];
   export function renameSync(a: string, b: string): void;
+  export function realpathSync(p: string): string;
+  export function openSync(p: string, flags: string): number;
+  export function closeSync(fd: number): void;
   export interface ReadStream {
     pipe<T>(dest: T): T;
   }
@@ -58,6 +61,9 @@ declare module "node:fs" {
     statSync: typeof statSync;
     readdirSync: typeof readdirSync;
     renameSync: typeof renameSync;
+    realpathSync: typeof realpathSync;
+    openSync: typeof openSync;
+    closeSync: typeof closeSync;
     mkdtempSync: typeof mkdtempSync;
     rmSync: typeof rmSync;
     createReadStream: typeof createReadStream;

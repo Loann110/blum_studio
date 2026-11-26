@@ -66,7 +66,33 @@ export function checkOutPath(outPath: unknown, ext = ".png"): { target: string |
       err: toolError(`directory '${parent}' does not exist (create it first or drop out_path to use designs/)`),
     };
   }
-  return { target: outPath, err: "" };
+  // Collapse symlinks first: a symlinked parent must not redirect the write.
+  let realParent: string;
+  try {
+    realParent = fs.realpathSync(parent === "" ? "." : parent);
+  } catch {
+    return {
+      target: null,
+      err: toolError(`directory '${parent}' does not exist (create it first or drop out_path to use designs/)`),
+    };
+  }
+  // Never replace an existing file: exclusive-create the name (same -2 rule
+  // as media), so two exports racing for it cannot both win.
+  const target = path.join(realParent, path.basename(outPath));
+  const suffix = path.extname(target) || ext;
+  const stem = target.slice(0, target.length - suffix.length);
+  for (let n = 1; n < 1000; n++) {
+    const candidate = n === 1 ? target : `${stem}-${n}${suffix}`;
+    try {
+      fs.closeSync(fs.openSync(candidate, "wx"));
+      return { target: candidate, err: "" };
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== "EEXIST") {
+        return { target: null, err: toolError(`cannot write to '${outPath}' (${(e as Error).message})`) };
+      }
+    }
+  }
+  return { target: null, err: toolError(`cannot write to '${outPath}' (all -2..-999 names are taken)`) };
 }
 
 export function defaultPngPath(id: string): string {
