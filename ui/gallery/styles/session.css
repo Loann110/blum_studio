@@ -112,6 +112,11 @@
   word-break: break-word;
 }
 
+.line.usage {
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .composer {
   display: flex;
   gap: 8px;

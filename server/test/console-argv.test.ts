@@ -59,6 +59,29 @@ test("stream-json lines become transcript events", () => {
   assert.equal(agentSessionOf("nope"), null);
 });
 
+test("a result event keeps the real usage numbers it reports", () => {
+  const full = parseStreamLine(JSON.stringify({
+    type: "result",
+    subtype: "success",
+    result: "Done",
+    usage: {
+      input_tokens: 1200,
+      output_tokens: 300,
+      cache_read_input_tokens: 40_000,
+      cache_creation_input_tokens: 500,
+    },
+    total_cost_usd: 0.0342,
+    duration_ms: 72_100,
+    num_turns: 7,
+  }));
+  assert.deepEqual(full?.usage, { tokens: 42_000, costUsd: 0.0342, ms: 72_100, turns: 7 });
+  // Absent fields stay absent, a reported zero is kept.
+  const partial = parseStreamLine(`{"type":"result","result":"Done","usage":{"input_tokens":5},"duration_ms":0}`);
+  assert.deepEqual(partial?.usage, { tokens: 5, ms: 0 });
+  assert.equal(parseStreamLine(`{"type":"result","result":"Done"}`)?.usage, undefined);
+  assert.equal(parseStreamLine(`{"type":"assistant","message":{"content":[{"type":"text","text":"Hi"}]}}`)?.usage, undefined);
+});
+
 test("a dangerous prompt through cmd.exe stays one argument and runs nothing", async () => {
   if (process.platform !== "win32") return; // .cmd shims are Windows-only
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "blum-cmd-"));

@@ -93,12 +93,40 @@ export function claudeLaunch(prompt: string, resumeId?: string, sessionId?: stri
 
 /* ---- stream-json events ---- */
 
+// The real numbers Claude Code reports on its final result event: what the
+// run cost in tokens and time. Absent fields stay absent.
+export interface ConsoleUsage {
+  tokens?: number;
+  costUsd?: number;
+  ms?: number;
+  turns?: number;
+}
+
 export interface ConsoleEvent {
   time: number;
   kind: "text" | "tool" | "done" | "error";
   text?: string;
   tool?: string;
   agentSessionId?: string;
+  usage?: ConsoleUsage;
+}
+
+const TOKEN_KEYS = ["input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"];
+
+function usageOf(parsed: Record<string, unknown>): ConsoleUsage | undefined {
+  const raw = (typeof parsed.usage === "object" && parsed.usage ? parsed.usage : {}) as Record<string, unknown>;
+  const num = (value: unknown): number | undefined =>
+    typeof value === "number" && Number.isFinite(value) ? value : undefined;
+  const usage: ConsoleUsage = {};
+  const counts = TOKEN_KEYS.map((key) => num(raw[key])).filter((n): n is number => n !== undefined);
+  if (counts.length) usage.tokens = counts.reduce((sum, n) => sum + n, 0);
+  const costUsd = num(parsed.total_cost_usd);
+  if (costUsd !== undefined) usage.costUsd = costUsd;
+  const ms = num(parsed.duration_ms);
+  if (ms !== undefined) usage.ms = ms;
+  const turns = num(parsed.num_turns);
+  if (turns !== undefined) usage.turns = turns;
+  return Object.keys(usage).length ? usage : undefined;
 }
 
 function eventOf(parsed: Record<string, unknown>, now: number): ConsoleEvent | null {
@@ -125,7 +153,7 @@ function eventOf(parsed: Record<string, unknown>, now: number): ConsoleEvent | n
   if (type === "result") {
     const text = typeof parsed.result === "string" ? parsed.result : "Done.";
     const error = parsed.is_error === true || parsed.subtype === "error";
-    return { time: now, kind: error ? "error" : "done", text, agentSessionId };
+    return { time: now, kind: error ? "error" : "done", text, agentSessionId, usage: usageOf(parsed) };
   }
   return null;
 }
