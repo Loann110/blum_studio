@@ -332,6 +332,23 @@ export function lintModel(doc: Design): LintReport {
     }
   }
 
+  // A third family reads as an amateur mix, never a choice.
+  const families: string[] = [];
+  const seen = new Set<string>();
+  let third: Item | null = null;
+  for (const p of flat) {
+    if (p.item.type !== 'text') continue;
+    const font = (p.item.props as TextProps).font;
+    const key = font.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    families.push(font);
+    if (families.length === 3) third = p.item;
+  }
+  if (third && families.length > 2) {
+    add('font_families', 'warn', third.id, `${families.length} font families (${families.join(', ')}): keep 2 at most`);
+  }
+
   return { findings, score: careScore(findings) };
 }
 

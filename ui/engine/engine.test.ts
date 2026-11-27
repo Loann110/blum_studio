@@ -471,6 +471,47 @@ describe('lint: overlaps warn only when reading suffers', () => {
   });
 });
 
+describe('lint: font families', () => {
+  const text = (id: string, font: string, y: number, weight = 700, extra: Json = {}): Json => ({
+    id, name: id, type: 'text', x: 540, y, width: 800, height: 140,
+    ...extra,
+    props: { text: 'Hello', font, size: 96, weight, color: '#111111' },
+  });
+  const story = (items: Json[]): Json => ({
+    version: 1, name: 'T', format: 'story', background: { kind: 'color', color: '#ffffff' }, items,
+  });
+  const familyFindings = (d: Json): Array<{ check: string; level: string; item: string; message: string }> =>
+    (lintDesign(d).findings as Array<{ check: string; level: string; item: string; message: string }>)
+      .filter((f) => f.check === 'font_families');
+
+  it('three families warn once', () => {
+    const found = familyFindings(story([text('a', 'Anton', 400), text('b', 'Inter', 700), text('c', 'Lora', 1000)]));
+    assert.equal(found.length, 1);
+    assert.equal(found[0].level, 'warn');
+    assert.equal(found[0].item, 'c');
+    assert.equal(found[0].message, '3 font families (Anton, Inter, Lora): keep 2 at most');
+  });
+
+  it('two families in several weights stay quiet', () => {
+    const d = story([
+      text('a', 'Anton', 300, 400),
+      text('b', 'anton', 600, 900),
+      text('c', 'Inter', 900, 400),
+      text('e', 'INTER', 1200, 700),
+    ]);
+    assert.deepEqual(familyFindings(d), []);
+  });
+
+  it('a hidden third family stays quiet', () => {
+    const hidden: Json = {
+      id: 'g', name: 'g', type: 'group', x: 540, y: 1000, width: 800, height: 300, visible: false,
+      items: [{ ...text('c', 'Lora', -70), x: 0 }, { ...text('d', 'Lora', 70), x: 0 }],
+    };
+    const d = story([text('a', 'Anton', 400), text('b', 'Inter', 700), text('e', 'Caveat', 1000, 700, { visible: false }), hidden]);
+    assert.deepEqual(familyFindings(d), []);
+  });
+});
+
 describe('page formats', () => {
   const blank = (format: string, extra: Json = {}): Json => ({
     version: 1, name: 'T', format, background: { kind: 'color', color: '#ffffff' }, items: [], ...extra,
