@@ -42,7 +42,7 @@ const DOCS: Record<string, string> = {
     "(without src the frame warns). " +
     "Colors are #rrggbb or rgba(r,g,b,a). x/y is the item center in design px.",
   ops:
-    "apply_ops takes [{op, ...}]. Ops: add {item}, update {id, patch}, remove {id}, " +
+    "apply_ops takes [{op, ...}]. Ops: add {item}, update {id, patch} (patch fields flat or under props), remove {id}, " +
     "reorder {id, to: front|back|forward|backward} or {id, index} (top-level items only, " +
     "never inside a group: ungroup first), duplicate {id, name?}, " +
     "lock {id, locked}, group {ids (2 or more), name?}, ungroup {id}, align {ids, align: " +

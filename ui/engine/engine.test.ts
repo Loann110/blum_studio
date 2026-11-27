@@ -856,3 +856,49 @@ describe('css injection', () => {
     assert.ok(html.includes('color:#111111'));
   });
 });
+
+describe('update patch props', () => {
+  const story = (): Json => ({
+    version: 1, name: 'T', format: 'story',
+    background: { kind: 'color', color: '#ffffff' }, items: [],
+  });
+  const add = {
+    op: 'add',
+    item: {
+      id: 't', name: 't', type: 'text', x: 540, y: 960, width: 800, height: 200,
+      props: { text: 'Hi', font: 'Inter', size: 96, color: '#111111' },
+    },
+  };
+
+  it('a props object merges as if flat', () => {
+    const one = applyOps(story(), [add]) as Json;
+    const two = applyOps(one, [{ op: 'update', id: 't', patch: { props: { color: '#ff0000' } } }]) as Json;
+    assert.equal((((two.items as Json[])[0].props) as Json).color, '#ff0000');
+  });
+
+  it('an invalid props value fails like the flat field', () => {
+    const one = applyOps(story(), [add]) as Json;
+    let flat = '';
+    let nested = '';
+    try {
+      applyOps(one, [{ op: 'update', id: 't', patch: { color: 'nope' } }]);
+    } catch (e) {
+      flat = (e as Error).message;
+    }
+    try {
+      applyOps(one, [{ op: 'update', id: 't', patch: { props: { color: 'nope' } } }]);
+    } catch (e) {
+      nested = (e as Error).message;
+    }
+    assert.match(flat, /bad color 'nope'/);
+    assert.equal(nested, flat);
+  });
+
+  it('an unknown props field still fails', () => {
+    const one = applyOps(story(), [add]) as Json;
+    assert.throws(
+      () => applyOps(one, [{ op: 'update', id: 't', patch: { props: { zzz_nope: 'x' } } }]),
+      /unknown field 'zzz_nope'/,
+    );
+  });
+});

@@ -61,13 +61,24 @@ export function parseOp(d: Json): Op {
   };
   if (isObj(d['patch'])) {
     const p = d['patch'] as Json;
-    for (const k of Object.keys(p)) {
-      const v = p[k];
+    const put = (k: string, v: unknown): void => {
       if (typeof v === 'boolean') patch.bools.set(k, v);
       else if (isObj(v)) patch.paints.set(k, parsePaint(v));
       else if (typeof v === 'number' && Number.isInteger(v)) patch.ints.set(k, v);
       else if (typeof v === 'number') patch.numbers.set(k, v);
       else patch.strings.set(k, v as string);
+    };
+    for (const k of Object.keys(p)) {
+      if (k === 'props' && isObj(p[k])) continue;
+      put(k, p[k]);
+    }
+    // Agents nest fields like add items; a flat key wins over props.
+    if (isObj(p['props'])) {
+      const inner = p['props'] as Json;
+      for (const k of Object.keys(inner)) {
+        if (k !== 'props' && has(p, k)) continue;
+        put(k, inner[k]);
+      }
     }
   }
   const ids: string[] = [];
