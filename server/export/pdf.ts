@@ -7,6 +7,7 @@ import { pageOf } from "../../ui/engine/index.js";
 import { fileUrl, renderHtml } from "./png.js";
 import { getDesign, tmpFile } from "../store.js";
 import { getOrLaunchBrowser } from "./browser.js";
+import { guardRenderPage } from "./guard.js";
 import { designsDir } from "../paths.js";
 
 // Paper size for page.pdf(): print formats use their exact mm size so the
@@ -43,6 +44,7 @@ export async function exportPdf(id: string, out?: string | null): Promise<string
   const browser = await getOrLaunchBrowser();
   const pg = await browser.newPage({ viewport: { width: cssW, height: cssH } });
   try {
+    await guardRenderPage(pg, pageFile);
     await pg.goto(fileUrl(pageFile), { waitUntil: "load" });
     await pg.waitForTimeout(900);
     await pg.pdf({

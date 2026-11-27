@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pageOf } from "../../ui/engine/index.js";
 import { getOrLaunchBrowser } from "./browser.js";
+import { guardRenderPage } from "./guard.js";
 import { assetsDir, designsDir, fontsDir, mediaDir, renderBundle, renderCss, renderFontsCss } from "../paths.js";
 import { designPath, getDesign, tmpFile, type Design } from "../store.js";
 
@@ -57,6 +58,7 @@ async function screenshotDesign(design: Design, target: string | null, waitMs: n
   const deviceScaleFactor = page2.kind === "print" ? 2 : 1;
   const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor });
   try {
+    await guardRenderPage(page, pageFile);
     await page.goto(fileUrl(pageFile), { waitUntil: "load" });
     // Web fonts shift glyphs after load: wait for them before the shot
     // so exports and text measurement share the same font state.

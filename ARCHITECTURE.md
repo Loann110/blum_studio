@@ -143,6 +143,7 @@ tool.
 | `http.ts`, `paths.ts` | Request and response helpers; where designs, assets and builds live. |
 | `version.ts` | The studio version, read from the root `package.json` (one source of truth). |
 | `store.ts` | Reading, writing and listing designs, validated both ways, with a per-design write lock. |
+| `download.ts` | Safe http(s) download: private addresses refused, redirects capped, 25 MB cap. |
 | `histories.ts` | Undo and redo on disk, shared by HTTP and MCP. |
 | `resources.ts` | Fonts, stickers, photos and masks, for both APIs. |
 | `lint.ts` | The engine's design check, with text overflow measured on the real fonts. |
@@ -152,7 +153,7 @@ tool.
 | `mcp/trust.ts` | Argument checks shared by every tool: ids, paths, sticker refs. |
 | `mcp/tools/` | Tool implementations, one file per group (`vector.ts` is the `draw_svg` workshop). |
 | `mcp/compact.ts`, `mcp/item-examples.ts` | Short text replies; one valid example per item type. |
-| `export/` | One shared Chromium (downloaded on first launch or export, never with the install); PNG, PDF, text measurement, background removal. |
+| `export/` | One shared Chromium (downloaded on first launch or export, never with the install); PNG, PDF, text measurement, background removal, request guard. |
 | `agents/` | Detecting and connecting AI agents (Claude Code, Codex, Muse, Claude Desktop, Cursor), and running Claude Code for the Create page. |
 | `node.d.ts` | Minimal Node type declarations, so the server builds without `@types/node`. |
 | `test/` | The server suite (`node:test`), one file per route group and MCP group, plus `i18n` (resources stay English), `csrf` (cross-site write guard) and `mcp-templates` (examples refuse MCP writes). |

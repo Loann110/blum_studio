@@ -1,6 +1,7 @@
 // Preview: PNG images the client can look at, single and board.
 import fs from "node:fs";
 import { getOrLaunchBrowser } from "../../export/browser.js";
+import { guardRenderPage } from "../../export/guard.js";
 import { fileUrl, renderHtml } from "../../export/png.js";
 import { tmpFile, type Design } from "../../store.js";
 import { pageOf } from "../../../ui/engine/index.js";
@@ -17,6 +18,7 @@ export async function previewPng(design: Design, width: number, region: unknown)
   const pageFile = tmpFile(".html");
   fs.writeFileSync(pageFile, renderHtml(design), "utf-8");
   try {
+    await guardRenderPage(page, pageFile);
     await page.goto(fileUrl(pageFile), { waitUntil: "load" });
     await page.waitForTimeout(900);
     const shot = await page.locator("#stage .blum-stage").screenshot();

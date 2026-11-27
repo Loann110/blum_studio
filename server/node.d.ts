@@ -25,6 +25,27 @@ declare module "node:http" {
   export function createServer(
     handler: (req: IncomingMessage, res: ServerResponse) => void,
   ): Server;
+  export interface ClientResponse {
+    statusCode?: number;
+    headers: Record<string, string | string[] | undefined>;
+    on(event: "data", fn: (chunk: Buffer) => void): void;
+    on(event: "end" | "error" | "close", fn: (arg?: unknown) => void): void;
+    destroy(): void;
+  }
+  export interface ClientRequest {
+    on(event: "error", fn: (e: Error) => void): void;
+    destroy(err?: Error): void;
+    end(): void;
+  }
+  export interface RequestOptions {
+    hostname?: string;
+    port?: number;
+    path?: string;
+    method?: string;
+    headers?: Record<string, string>;
+    lookup?: (hostname: string, options: { all?: boolean }, callback: (...args: unknown[]) => void) => void;
+  }
+  export function request(options: RequestOptions, callback?: (res: ClientResponse) => void): ClientRequest;
 }
 
 declare module "node:fs" {
@@ -100,6 +121,46 @@ declare module "node:os" {
 
 declare module "node:crypto" {
   export function randomBytes(n: number): Buffer;
+}
+
+declare module "node:https" {
+  export interface ClientResponse {
+    statusCode?: number;
+    headers: Record<string, string | string[] | undefined>;
+    on(event: "data", fn: (chunk: Buffer) => void): void;
+    on(event: "end" | "error" | "close", fn: (arg?: unknown) => void): void;
+    destroy(): void;
+  }
+  export interface ClientRequest {
+    on(event: "error", fn: (e: Error) => void): void;
+    destroy(err?: Error): void;
+    end(): void;
+  }
+  export interface RequestOptions {
+    hostname?: string;
+    port?: number;
+    path?: string;
+    method?: string;
+    headers?: Record<string, string>;
+    lookup?: (hostname: string, options: { all?: boolean }, callback: (...args: unknown[]) => void) => void;
+  }
+  export function request(options: RequestOptions, callback?: (res: ClientResponse) => void): ClientRequest;
+}
+
+declare module "node:net" {
+  export function isIP(s: string): number;
+  export function isIPv4(s: string): boolean;
+  export function isIPv6(s: string): boolean;
+  export class BlockList {
+    addSubnet(network: string, prefix: number, family?: "ipv4" | "ipv6"): void;
+    check(address: string, family?: "ipv4" | "ipv6"): boolean;
+  }
+}
+
+declare module "node:dns" {
+  export namespace promises {
+    export function lookup(host: string, opts: { all: true }): Promise<Array<{ address: string; family: number }>>;
+  }
 }
 
 declare module "node:child_process" {

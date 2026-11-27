@@ -1,7 +1,7 @@
 // Media: store a local file or URL as design media, returns its src.
 import fs from "node:fs";
 import { removeBackground } from "../../export/cutout.js";
-import { downloadImage, importImage, UnknownDesign } from "../../store.js";
+import { designPath, downloadImage, importImage, UnknownDesign } from "../../store.js";
 import { badDesignId, refuseTemplate, toolError } from "../trust.js";
 
 export async function importImageTool(
@@ -19,6 +19,9 @@ export async function importImageTool(
   }
   if (typeof filename !== "string" || !filename.trim()) {
     return toolError("filename must be text (the media name, e.g. 'hero')");
+  }
+  if (!fs.existsSync(designPath(id as string))) {
+    return toolError(`unknown design '${id}' (use list_designs to see ids)`);
   }
   let data: Buffer;
   let name: string;

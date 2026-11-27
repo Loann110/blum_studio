@@ -5,8 +5,8 @@ import os from "node:os";
 import path from "node:path";
 import { validateDesign } from "../ui/engine/index.js";
 import { CUSTOM_MAX, CUSTOM_MIN, FORMATS, findFormat, validCustom } from "../ui/engine/index.js";
+import { MAX_IMAGE_BYTES, downloadImage } from "./download.js";
 import { assetsDir, designsDir, mediaDir } from "./paths.js";
-import { studioVersion } from "./version.js";
 
 export type Design = Record<string, unknown>;
 
@@ -234,18 +234,6 @@ export function listDesigns(): DesignRow[] {
 
 /* ---- media ---- */
 
-export async function downloadImage(url: string): Promise<Buffer> {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 30_000);
-  try {
-    const res = await fetch(url, { headers: { "User-Agent": `blum-studio/${studioVersion()}` }, signal: ctrl.signal });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return Buffer.from(await res.arrayBuffer());
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 export function designMtimeMs(id: string): number {
   return fs.statSync(designPath(id)).mtimeMs / 1000;
 }
@@ -254,7 +242,7 @@ export async function importImage(id: string, data: Buffer, filename: string): P
   if (!fs.existsSync(designPath(id))) throw new UnknownDesign(`unknown design '${id}'`);
   const ext = sniffImage(data);
   if (!ext) throw new Error("not a PNG, JPEG, WebP, GIF or SVG image");
-  if (data.length > 25_000_000) throw new Error("image is larger than 25 MB");
+  if (data.length > MAX_IMAGE_BYTES) throw new Error("image is larger than 25 MB");
   fs.mkdirSync(mediaDir(), { recursive: true });
   const stem = path.basename(filename, path.extname(filename)).toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "image";
   let target = path.join(mediaDir(), `${id}-${stem}${ext}`);
@@ -276,7 +264,7 @@ export async function importImage(id: string, data: Buffer, filename: string): P
   return { src: `media/${path.basename(target)}`, path: target };
 }
 
-export { assetsDir };
+export { assetsDir, downloadImage };
 
 export function tmpFile(suffix: string): string {
   return path.join(os.tmpdir(), `blum-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}${suffix}`);

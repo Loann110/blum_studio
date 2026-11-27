@@ -47,7 +47,7 @@ test("evil filename stays in media", async () => {
   assert.ok(!got.src.includes(".."));
 });
 
-test("http source downloads through the same checks", async () => {
+test("http source to a private address is refused", async () => {
   const made = JSON.parse(createDesignTool("Remote", "story")) as { id: string };
   const { createServer } = await import("node:http");
   const data = pngBytes();
@@ -59,8 +59,8 @@ test("http source downloads through the same checks", async () => {
   await new Promise((r) => setTimeout(r, 200));
   try {
     const port = (server.address() as { port: number }).port;
-    const got = JSON.parse(await importImageTool(made.id, `http://127.0.0.1:${port}/y.png`)) as { src: string };
-    assert.ok(got.src.endsWith(".png"));
+    const reply = await importImageTool(made.id, `http://127.0.0.1:${port}/y.png`);
+    assert.ok(err(reply).includes("refused") && err(reply).includes("private"), reply);
   } finally {
     server.close();
   }

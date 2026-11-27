@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { Page } from "playwright-core";
 import { getOrLaunchBrowser } from "./browser.js";
+import { guardRenderPage } from "./guard.js";
 import { fontsDir, renderFontsCss } from "../paths.js";
 
 function fileUrl(p: string): string {
@@ -29,6 +30,7 @@ async function measurePage(): Promise<Page> {
         `<!doctype html><html><head><style>${css}</style></head><body><canvas id="c"></canvas></body></html>`,
         "utf-8",
       );
+      await guardRenderPage(p, file);
       await p.goto(fileUrl(file), { waitUntil: "load" });
       await p.evaluate(() => document.fonts.ready.then(() => {}));
       page = p;
