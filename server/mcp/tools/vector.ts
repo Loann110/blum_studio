@@ -42,8 +42,8 @@ export async function drawSvgTool(
   const pad = Math.max(w, h) * 0.2;
   const region = [cx - w / 2 - pad, cy - h / 2 - pad, w + 2 * pad, h + 2 * pad];
   try {
-    const image = await previewPng(design as Design, 400, region);
-    return [{ type: "text", text: JSON.stringify({ ok: true, id }) }, { type: "image", data: image, mimeType: "image/png" }];
+    const shot = await previewPng(design as Design, 400, region);
+    return [{ type: "text", text: JSON.stringify({ ok: true, id }) }, { type: "image", data: shot.image, mimeType: "image/png" }];
   } catch (e) {
     return JSON.stringify({ ok: true, id, preview: `failed: ${(e as Error).message}` });
   }

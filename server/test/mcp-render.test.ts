@@ -34,6 +34,31 @@ test("preview is a small png", async () => {
   assert.ok(Array.isArray(await previewTool(made.id, "huge")));
 });
 
+test("preview names images that failed to load", async () => {
+  const made = JSON.parse(createDesignTool("Broken", "story")) as { id: string };
+  await applyOpsTool(made.id, [{
+    op: "add",
+    item: { id: "p1", name: "p1", type: "photo", x: 540, y: 960, width: 800, height: 800, props: { src: "http://127.0.0.1:9/x.png", mask: "rect", fit: "cover" } },
+  }]);
+  const parts = (await previewTool(made.id)) as Array<{ type: string; text?: string; data?: string }>;
+  assert.equal(parts.length, 2);
+  assert.equal(parts[0].type, "text");
+  assert.equal(parts[0].text, "image failed to load: http://127.0.0.1:9/x.png (renders empty; pick another src)");
+  assert.equal(parts[1].type, "image");
+});
+
+test("preview board rows name images that failed to load", async () => {
+  const made = JSON.parse(createDesignTool("Broken Board", "story")) as { id: string };
+  await applyOpsTool(made.id, [{
+    op: "add",
+    item: { id: "p1", name: "p1", type: "photo", x: 540, y: 960, width: 800, height: 800, props: { src: "http://127.0.0.1:9/x.png", mask: "rect", fit: "cover" } },
+  }]);
+  const [head, ...images] = (await previewBoardTool([made.id])) as Array<{ type: string; text?: string }>;
+  const rows = JSON.parse(head.text ?? "") as Array<{ image?: number; failed?: string[] }>;
+  assert.deepEqual(rows[0].failed, ["image failed to load: http://127.0.0.1:9/x.png (renders empty; pick another src)"]);
+  assert.deepEqual(images.map((p) => p.type), ["image"]);
+});
+
 test("preview board rows and caps", async () => {
   const first = JSON.parse(createDesignTool("Board A", "story")) as { id: string };
   const [head, ...images] = (await previewBoardTool([first.id, "no-such-id"])) as Array<{ type: string; text?: string }>;

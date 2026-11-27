@@ -86,6 +86,7 @@ const DOCS: Record<string, string> = {
     "covered (note: a picture drawn over text, check it in preview), empty_design, " +
     "contrast (WCAG, against what is really behind the text; contrast_picture note on photos), empty_text, photo_empty " +
     "(warn when the frame has no image). " +
+    "image_failed (error when a remote image does not load: pick another src). " +
     "Score: 100 minus 20 per error and 8 per warn; notes (info) never lower it. " +
     "polish_score is the score alone with error/warning counts. " +
     "Fix warns and errors before exporting.",

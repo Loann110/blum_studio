@@ -1,11 +1,15 @@
 // MCP check/resources: lint findings, scores, listings.
 import test, { after } from "node:test";
 import assert from "node:assert/strict";
+import { createServer } from "node:http";
 import { checkDesignTool, polishScoreTool } from "../mcp/tools/check.js";
 import { createDesignTool } from "../mcp/tools/designs.js";
 import { applyOpsTool } from "../mcp/tools/ops.js";
 import { listResourcesTool } from "../mcp/tools/resources.js";
-import { useTempDesigns } from "./helpers.js";
+import { lintMeasured } from "../lint.js";
+import { getDesign } from "../store.js";
+import type { ResolveFn } from "../download.js";
+import { tinyPng, useTempDesigns } from "./helpers.js";
 import { closeBrowser } from "../export/browser.js";
 
 useTempDesigns("mcp-check");
@@ -81,6 +85,60 @@ test("short box reports overflow when the width fits", async () => {
   }]);
   const report = JSON.parse(await checkDesignTool(made.id)) as { findings: Array<{ check: string; item: string }> };
   assert.ok(report.findings.some((f) => f.check === "text_overflow" && f.item === "short"), JSON.stringify(report));
+});
+
+test("remote image that 404s is an image_failed error", async () => {
+  const server = createServer((req, res) => {
+    if (req.url === "/missing.png") {
+      res.writeHead(404);
+      res.end();
+    } else {
+      res.writeHead(200, { "content-type": "image/png" });
+      res.end(tinyPng());
+    }
+  });
+  server.listen(0, "127.0.0.1");
+  await new Promise((r) => setTimeout(r, 200));
+  try {
+    const port = (server.address() as { port: number }).port;
+    // Same injected resolver as the ssrf suite: the guard itself is untouched.
+    const resolve: ResolveFn = async (host) => {
+      if (host === "127.0.0.1") return ["127.0.0.1"];
+      throw new Error(`unexpected host ${host}`);
+    };
+    const photo = async (src: string) => {
+      const made = JSON.parse(createDesignTool("Remote", "story")) as { id: string };
+      await applyOpsTool(made.id, [{
+        op: "add",
+        item: { id: "p1", name: "p1", type: "photo", x: 540, y: 960, width: 800, height: 800, props: { src, mask: "rect", fit: "cover" } },
+      }]);
+      return getDesign(made.id) as unknown as Record<string, unknown>;
+    };
+    const bad = await lintMeasured(await photo(`http://127.0.0.1:${port}/missing.png`), resolve);
+    assert.ok(bad.findings.some((f) => f.check === "image_failed" && f.level === "error" && f.item === "p1"), JSON.stringify(bad));
+    assert.ok(bad.score < 100, JSON.stringify(bad));
+    const good = await lintMeasured(await photo(`http://127.0.0.1:${port}/ok.png`), resolve);
+    assert.ok(!good.findings.some((f) => f.check === "image_failed"), JSON.stringify(good));
+  } finally {
+    server.close();
+  }
+});
+
+test("image the guard refuses is an image_failed error", async () => {
+  const made = JSON.parse(createDesignTool("Refused", "story")) as { id: string };
+  await applyOpsTool(made.id, [{
+    op: "add",
+    item: { id: "p1", name: "p1", type: "photo", x: 540, y: 960, width: 800, height: 800, props: { src: "http://127.0.0.1:9/x.png", mask: "rect", fit: "cover" } },
+  }]);
+  const report = JSON.parse(await checkDesignTool(made.id)) as {
+    findings: Array<{ check: string; level: string; item: string; message: string }>;
+    score: number;
+  };
+  const found = report.findings.find((f) => f.check === "image_failed");
+  assert.equal(found?.level, "error", JSON.stringify(report));
+  assert.equal(found?.item, "p1", JSON.stringify(report));
+  assert.ok(found?.message.includes("pick another src"), found?.message);
+  assert.ok(report.score < 100, JSON.stringify(report));
 });
 
 test("notes alone keep the score at 100", async () => {

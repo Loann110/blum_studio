@@ -9,12 +9,25 @@ import { loadDesign, toolError, type Content } from "../trust.js";
 
 const png = (data: string): Content => ({ type: "image", data, mimeType: "image/png" });
 
-// Base64 PNG of a design dict at `width` px (region crops first).
-export async function previewPng(design: Design, width: number, region: unknown): Promise<string> {
+const failedLine = (url: string): string => `image failed to load: ${url} (renders empty; pick another src)`;
+
+// Base64 PNG of a design dict at `width` px (region crops first), plus the
+// remote images that failed to load in the rendered page.
+export async function previewPng(design: Design, width: number, region: unknown): Promise<{ image: string; failed: string[] }> {
   const d = design as unknown as { format?: string; width?: number; height?: number };
   const size = pageOf(d.format ?? "story", d.width, d.height);
   const browser = await getOrLaunchBrowser();
   const page = await browser.newPage({ viewport: { width: size.width, height: size.height } });
+  // A 404 still answers, so requestfailed alone would miss it: watch responses too.
+  const failed = new Set<string>();
+  const note = (url: string): void => {
+    // Remote pictures only: this is the broken-src signal, not a guard log.
+    if (url.startsWith("http://") || url.startsWith("https://")) failed.add(url);
+  };
+  page.on("requestfailed", (req) => note(req.url()));
+  page.on("response", (res) => {
+    if (res.status() >= 400) note(res.url());
+  });
   const pageFile = tmpFile(".html");
   fs.writeFileSync(pageFile, renderHtml(design), "utf-8");
   try {
@@ -27,7 +40,7 @@ export async function previewPng(design: Design, width: number, region: unknown)
       fn: (arg: [string, number, unknown, number]) => Promise<string>,
       arg: [string, number, unknown, number],
     ) => Promise<string>).bind(page);
-    return await run(
+    const image = await run(
       ([img64, want, box, designWidth]) => {
         return new Promise<string>((resolve, reject) => {
           const img = new Image();
@@ -65,6 +78,7 @@ export async function previewPng(design: Design, width: number, region: unknown)
       },
       [b64, width, Array.isArray(region) ? region : null, size.width],
     );
+    return { image, failed: [...failed] };
   } finally {
     await page.close().catch(() => {});
     try {
@@ -87,7 +101,9 @@ export async function previewTool(id: unknown, width: unknown = 400, region: unk
   }
   want = Math.max(64, Math.min(1080, Math.trunc(want)));
   try {
-    return [png(await previewPng(design as Design, want, Array.isArray(region) ? region : null))];
+    const shot = await previewPng(design as Design, want, Array.isArray(region) ? region : null);
+    if (!shot.failed.length) return [png(shot.image)];
+    return [{ type: "text", text: shot.failed.map(failedLine).join("\n") }, png(shot.image)];
   } catch (e) {
     return toolError(`preview failed: ${(e as Error).message} (need Chromium? it should be in %LOCALAPPDATA%\\ms-playwright)`);
   }
@@ -118,13 +134,15 @@ export async function previewBoardTool(ids: unknown, width: unknown = 135): Prom
     }
     try {
       const shot = await previewPng(design as Design, want, null);
-      rows.push({
+      const row: Record<string, unknown> = {
         id: raw,
         name: (design as Record<string, unknown>).name ?? "",
         format: (design as Record<string, unknown>).format ?? "story",
         image: images.length + 1,
-      });
-      images.push(png(shot));
+      };
+      if (shot.failed.length) row.failed = shot.failed.map(failedLine);
+      rows.push(row);
+      images.push(png(shot.image));
     } catch (e) {
       rows.push({ id: raw, error: `preview failed: ${(e as Error).message}` });
     }

@@ -2,6 +2,7 @@
 // against the real fonts (the engine only estimates from character counts).
 import { lintDesign } from "../ui/engine/index.js";
 import { applyCase, careScore } from "../ui/engine/index.js";
+import { downloadImage, resolvePublicAddresses, type ResolveFn } from "./download.js";
 import { wrapText } from "./export/measure.js";
 
 type Json = Record<string, unknown>;
@@ -14,6 +15,29 @@ function collectTexts(items: unknown, out: Json[]): void {
     if (it.type === "group") collectTexts(it.items ?? it.children, out);
     else if (it.type === "text") out.push(it);
   }
+}
+
+function collectImages(items: unknown, out: Json[], hidden: boolean): void {
+  for (const it of (items as Json[]) ?? []) {
+    if (!it) continue;
+    // A hidden group hides its pictures too: nothing under it renders.
+    const hide = hidden || it.visible === false;
+    if (it.type === "group") collectImages(it.items ?? it.children, out, hide);
+    else if (!hide && (it.type === "photo" || it.type === "image")) out.push(it);
+  }
+}
+
+// True when the picture is surely broken (its server said so, or the guard
+// refuses it); null when our own network may be at fault, like wrapText.
+async function brokenImage(src: string, resolve: ResolveFn): Promise<boolean | null> {
+  try {
+    await downloadImage(src, resolve);
+  } catch (e) {
+    const msg = (e as Error).message;
+    if (/^HTTP \d+/.test(msg) || msg.startsWith("refused:")) return true;
+    return null;
+  }
+  return false;
 }
 
 // True when the wrapped text is taller than its box or a word is wider; null if unmeasurable.
@@ -35,7 +59,7 @@ async function overflows(item: Json): Promise<boolean | null> {
   return wrap.widest > width * 1.02 || height > Number(item.height ?? 0) * 1.05;
 }
 
-export async function lintMeasured(design: Json): Promise<LintReport> {
+export async function lintMeasured(design: Json, resolve: ResolveFn = resolvePublicAddresses): Promise<LintReport> {
   const report = lintDesign(design) as unknown as LintReport;
   const texts: Json[] = [];
   collectTexts(design.items, texts);
@@ -58,5 +82,14 @@ export async function lintMeasured(design: Json): Promise<LintReport> {
     const id = String(item.id);
     if (!seen.has(id) && measured.get(id)) kept.push({ check: "text_overflow", level: "warn", item: id, message: `'${id}' overflows its box with the real font: enlarge the box or shorten/shrink the text` });
   }
+  // A remote picture that does not load renders an empty frame, like a 404.
+  const images: Json[] = [];
+  collectImages(design.items, images, false);
+  // Local sources never fail this way; only remote pictures are fetched, together.
+  const remote = images.map((item) => ({ id: String(item.id), src: String(((item.props ?? {}) as Json).src ?? "") })).filter((r) => /^https?:\/\//i.test(r.src));
+  const broken = await Promise.all(remote.map((r) => brokenImage(r.src, resolve)));
+  remote.forEach(({ id, src }, i) => {
+    if (broken[i]) kept.push({ check: "image_failed", level: "error", item: id, message: `'${id}' image failed to load: ${src} (renders empty; pick another src)` });
+  });
   return { findings: kept, score: careScore(kept) };
 }
