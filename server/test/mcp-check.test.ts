@@ -47,6 +47,12 @@ test("resources kinds and bad kind", () => {
   assert.ok(err(listResourcesTool("sounds")).includes("fonts|"));
   assert.ok(err(listResourcesTool("palettes")).includes("fonts|"));
   assert.ok(err(listResourcesTool("fonts", 123)).includes("must be text"));
+  // The catalogue stays small for an agent's context, the full row on demand.
+  const all = listResourcesTool("photos");
+  assert.ok(all.length < 30_000, `${all.length} bytes`);
+  const first = (JSON.parse(all) as Array<{ id: string; url: string; palette: string[] }>)[0];
+  assert.ok(first.url.startsWith("https://") && first.palette.every((h) => h.startsWith("#")));
+  assert.ok(Array.isArray((JSON.parse(listResourcesTool("photos", first.id)) as Array<{ colors: unknown }>)[0].colors));
   // Accents and case never hide a photo: "Café" finds what "cafe" finds.
   const cafe = JSON.parse(listResourcesTool("photos", "cafe")) as unknown[];
   assert.ok(cafe.length > 0);
