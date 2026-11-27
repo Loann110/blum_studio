@@ -21,7 +21,7 @@ import { exportPdfTool, exportPngTool } from "./tools/export.js";
 export const server = new McpServer({ name: "blum-studio", version: studioVersion() });
 
 const TOOLS: Array<{ name: string; desc: string; schema: Record<string, z.ZodTypeAny>; fn: (a: Record<string, unknown>) => Promise<string | Content[]> | string }> = [
-  { name: "overview", desc: "Read first: what this server does and the design rules to follow.", schema: {}, fn: () => overviewTool() },
+  { name: "overview", desc: "Read first: rules, item examples, ops and formats in one reply.", schema: {}, fn: () => overviewTool() },
   { name: "api_info", desc: "Short docs for one topic: items (complete examples to add), formats, ops, lint, resources, export.", schema: { topic: z.string() }, fn: (a) => apiInfoTool(a.topic) },
   { name: "style_guide", desc: "Short design rules for pages: no topic gives them all; topic: composition|hierarchy|type|color|photo|depth|finish|avoid|types, or a type:<id> listed by types.", schema: { topic: z.string().optional().default("") }, fn: (a) => styleGuideTool(a.topic as string) },
   { name: "create_design", desc: "Create an empty design in any format; returns {id, design}.", schema: { name: z.string(), format: z.string().optional(), width: z.number().optional(), height: z.number().optional() }, fn: (a) => createDesignTool(a.name, a.format, a.width, a.height) },

@@ -29,10 +29,25 @@ function text(id: string): Record<string, unknown> {
   return { id, name: id, type: "text", x: 540, y: 420, width: 900, height: 200, props: { text: "Hello", font: "Inter", size: 96, weight: 700, color: "#111111" } };
 }
 
-test("overview states rules and stays compact", () => {
+test("overview states rules in one reply", () => {
   const out = overviewTool();
   assert.ok(out.includes("list_formats") && out.includes("check_design"));
-  assert.ok(out.length <= 650);
+  assert.ok(out.length < 16000, `overview is ${out.length} chars`);
+});
+
+test("overview carries the start pack in one reply", () => {
+  const out = overviewTool();
+  assert.ok(out.includes(styleGuideTool()), "rules");
+  assert.ok(out.includes(apiInfoTool("items")), "item examples");
+  assert.ok(out.includes(apiInfoTool("ops")), "ops");
+  assert.ok(out.includes("story 1080x1920"), "formats");
+  assert.ok(out.length < 16000, `overview is ${out.length} chars`);
+});
+
+test("overview inlines docs without changing them", () => {
+  assert.ok(!styleGuideTool().includes("apply_ops takes"));
+  assert.ok(!apiInfoTool("items").includes("Composition. Margins"));
+  assert.ok(!apiInfoTool("items").includes("story 1080x1920"));
 });
 
 test("docs name only topics and rules that exist", () => {
@@ -40,7 +55,7 @@ test("docs name only topics and rules that exist", () => {
   for (const topic of ["composition", "hierarchy", "type", "color", "photo", "depth", "finish", "avoid", "types"]) {
     assert.ok(!styleGuideTool(topic).includes('"ok":false'), topic);
   }
-  assert.ok(overviewTool().includes("composition") && !overviewTool().includes("grid"));
+  assert.ok(overviewTool().includes("composition") && !overviewTool().includes("style_guide('grid')"));
   const lint = apiInfoTool("lint");
   assert.ok(lint.includes("list_formats") && !lint.includes("<30px"));
   assert.ok(lint.includes("never lower") && lint.includes("covered"));

@@ -11,15 +11,30 @@ import { CUSTOM_MAX, CUSTOM_MIN, FORMATS } from "../../../ui/engine/index.js";
 import { badDesignId, loadDesign, toolError, withDesignLock } from "../trust.js";
 
 export function overviewTool(): string {
+  // One reply to start: the intro plus the docs an agent would read next.
+  const formats =
+    FORMATS.map((f) => `${f.id} ${f.width}x${f.height}`).join(", ") + `, custom ${CUSTOM_MIN}..${CUSTOM_MAX} px`;
   return `Pages as JSON: create any format, check it, export PNG or PDF.
 Short replies: apply_ops gives ok + touched ids, get_design one line
 per object, preview returns an image (region=[x,y,w,h] zooms).
-list_formats shows every size. Before designing, read
-style_guide() (composition, hierarchy, type, color, photo, depth,
-finish, avoid), then style_guide('types') to pick one. Floor: text in the
-safe zone; body >= minimum; contrast >= 4.5:1; never cover a face.
-Start from create_design + add ops, never copy (api_info items: full
-examples). Preview each batch; check_design, then export.`;
+list_formats shows every size. The design rules follow below, and
+style_guide('types') lists the layout archetypes to pick one. Floor:
+text in the safe zone; body >= minimum; contrast >= 4.5:1; never
+cover a face. Start from create_design + add ops, never copy
+(api_info items: full examples). Preview each batch; check_design,
+then export.
+
+Rules:
+${styleGuideTool()}
+
+Items:
+${apiInfoTool("items")}
+
+Ops:
+${apiInfoTool("ops")}
+
+Formats:
+${formats}`;
 }
 
 const DOCS: Record<string, string> = {
