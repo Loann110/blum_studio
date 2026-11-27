@@ -309,6 +309,9 @@ export function lintModel(doc: Design): LintReport {
         if (coverRatio(flat[i].absolute, flat[k].absolute) > 0.3) {
           add('overlap', 'warn', a.id, `'${a.id}' overlaps '${c.id}'`);
         }
+      } else if (c.type !== 'shape' && c.type !== 'group' && coverRatio(flat[i].absolute, flat[k].absolute) > 0.3) {
+        // A picture's box overstates what it hides, so only a note: the eye judges.
+        add('covered', 'info', a.id, `'${a.id}' may be covered by '${c.id}': check it in preview`);
       }
     }
   }

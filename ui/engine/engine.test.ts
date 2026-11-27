@@ -413,7 +413,19 @@ describe('lint: overlaps warn only when reading suffers', () => {
       id: 'shoe', name: 'shoe', type: 'photo', x: 540, y: 960, width: 1000, height: 1000,
       props: { src: 'media/cutout.png', mask: 'rect', fit: 'contain' },
     };
-    assert.deepEqual(checks(story([text('title', '#111111'), shoe])), []);
+    const found = lintDesign(story([text('title', '#111111'), shoe])).findings as Array<{ check: string; level: string }>;
+    // Never a warning (the box overstates a cut-out), only a note to look.
+    assert.deepEqual(found.map((f) => `${f.check}:${f.level}`), ['covered:info']);
+  });
+
+  it('a vector drawn over a title asks to check it, without lowering the score', () => {
+    const logo: Json = {
+      id: 'logo', name: 'logo', type: 'vector', x: 540, y: 960, width: 800, height: 140,
+      props: { svg: '<svg viewBox="0 0 10 10"><rect x="0" y="0" width="10" height="10" fill="#222222"/></svg>' },
+    };
+    const report = lintDesign(story([text('title', '#111111'), logo])) as { findings: Array<{ check: string }>; score: number };
+    assert.deepEqual(report.findings.map((f) => f.check), ['covered']);
+    assert.equal(report.score, 100);
   });
 
   it('a solid band burying half a text still warns', () => {
