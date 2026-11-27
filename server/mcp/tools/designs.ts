@@ -50,7 +50,7 @@ const DOCS: Record<string, string> = {
     "arrange {layout} (one op for a whole layout: " +
     "{stack: column|row, items: [...], align, gap: sm|md|lg, zone: safe|canvas} " +
     "or {anchors: {id: top|bottom|left|right|center}}), " +
-    "set_background {background}: {kind, color} for a flat colour " +
+    "set_background {background}: {kind: color, color} for a flat colour " +
     "(color needs a color), {kind: gradient, angle, stops: [{at, color}]} " +
     "(2+ stops; radial: true gives a round halo from the center instead of a linear sweep), " +
     "{kind: pattern, pattern: dots|grid|stripes|checker|waves|crosses|zigzag|" +

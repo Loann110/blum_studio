@@ -131,8 +131,10 @@ export function parseBackground(b: unknown): Background {
       stops.push({ at: sd['at'] as number, color: sd['color'] as string });
     }
   }
+  // Agents send kind flat for a plain color (the old ops doc said so).
+  const kind = str(d, 'kind', 'color');
   return {
-    kind: str(d, 'kind', 'color'),
+    kind: kind === 'flat' ? 'color' : kind,
     color: str(d, 'color', '#ffffff'),
     angle: num(d, 'angle', 135),
     radial: bool(d, 'radial'),

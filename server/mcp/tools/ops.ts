@@ -52,7 +52,8 @@ function rejectSilentShapes(ops: Op[]): string | null {
         return toolError(`ops[${i}] 'set_background' needs a background object (see api_info('ops') for shapes)`);
       }
       const b = bg as Record<string, unknown>;
-      if ((b.kind ?? "color") === "color" && !b.color) {
+      const k = b.kind ?? "color";
+      if ((k === "color" || k === "flat") && !b.color) {
         return toolError(`ops[${i}] 'set_background' needs a color (e.g. {'kind': 'color', 'color': '#ffffff'})`);
       }
     }

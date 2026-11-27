@@ -640,6 +640,29 @@ describe('background patterns', () => {
   });
 });
 
+describe('flat background alias', () => {
+  const story = (): Json => ({
+    version: 1, name: 'T', format: 'story',
+    background: { kind: 'color', color: '#ffffff' }, items: [],
+  });
+
+  it('kind flat stores as color; an unknown kind still fails', () => {
+    const out = applyOps(story(), [{
+      op: 'set_background',
+      background: { kind: 'flat', color: '#112233' },
+    }]) as Json;
+    assert.equal((out.background as Json).kind, 'color');
+    assert.equal((out.background as Json).color, '#112233');
+    assert.throws(
+      () => applyOps(story(), [{
+        op: 'set_background',
+        background: { kind: 'solid', color: '#112233' },
+      }]),
+      /background kind must be color\|gradient\|pattern\|image/,
+    );
+  });
+});
+
 describe('text photo fill and background grain', () => {
   const story = (background: Json = { kind: 'color', color: '#000000' }): Json => ({
     version: 1, name: 'T', format: 'story', background, items: [],
