@@ -57,8 +57,37 @@ test("media serves uploaded files and 404s unknown names", async () => {
     const got = await c.get(`/api/${src}`);
     assert.equal(got.status, 200);
     assert.equal(got.headers.get("content-type"), "image/png");
+    assert.equal(got.headers.get("x-content-type-options"), "nosniff");
     assert.equal((await c.get("/api/media/nope.png")).status, 404);
     assert.equal((await c.get("/api/media/../x.png")).status, 404);
+  } finally {
+    await c.close();
+  }
+});
+
+test("svg media is served sandboxed with nosniff", async () => {
+  const c = await liveServer();
+  try {
+    const id = ((await (await c.post("/api/designs", { name: "Tour" })).json()) as { id: string }).id;
+    const svg = Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect width="1" height="1" fill="#111111"/></svg>',
+    );
+    const up = multipart("file", "icon.svg", svg, "image/svg+xml");
+    const res = await c.raw(`/api/designs/${id}/media`, {
+      method: "POST",
+      headers: { "X-Blum-Request": "1", origin: c.base, "content-type": `multipart/form-data; boundary=${up.boundary}` },
+      body: up.body,
+    });
+    assert.equal(res.status, 200);
+    const src = (res.json() as { src: string }).src;
+    const got = await c.get(`/api/${src}`);
+    assert.equal(got.status, 200);
+    assert.equal(got.headers.get("content-type"), "image/svg+xml");
+    assert.equal(got.headers.get("x-content-type-options"), "nosniff");
+    assert.equal(
+      got.headers.get("content-security-policy"),
+      "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:",
+    );
   } finally {
     await c.close();
   }

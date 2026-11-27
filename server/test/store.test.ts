@@ -63,6 +63,19 @@ test("svg detected", async () => {
   assert.ok(got.src.endsWith(".svg"));
 });
 
+test("svg with active content is refused", async () => {
+  const made = createDesign("Media", "story");
+  const evil = [
+    '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg"><a href="javascript:alert(1)"><rect width="1" height="1"/></a></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div xmlns="http://www.w3.org/1999/xhtml">x</div></foreignObject></svg>',
+  ];
+  for (const svg of evil) {
+    await assert.rejects(importImage(made.id, Buffer.from(svg), "evil.svg"), /active content/);
+  }
+});
+
 test("accents roundtrip as utf-8", () => {
   const made = createDesign("Fête d'été — 21 h", "story");
   const design = getDesign(made.id) as unknown as { name: string; items: Array<Record<string, unknown>> };

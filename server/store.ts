@@ -49,6 +49,17 @@ export function sniffImage(data: Buffer): string | null {
   return null;
 }
 
+// An imported SVG hangs on the page as an image, but its media URL opens as
+// a document on the studio origin: refuse anything that could run there.
+function svgHasActiveContent(text: string): boolean {
+  return (
+    /<\s*\/?\s*script\b/i.test(text) ||
+    /<\s*\/?\s*foreignobject\b/i.test(text) ||
+    /\son[a-z]+\s*=/i.test(text) ||
+    /javascript\s*:/i.test(text)
+  );
+}
+
 /* ---- ids ---- */
 
 export function slugify(name: string): string {
@@ -243,6 +254,9 @@ export async function importImage(id: string, data: Buffer, filename: string): P
   const ext = sniffImage(data);
   if (!ext) throw new Error("not a PNG, JPEG, WebP, GIF or SVG image");
   if (data.length > MAX_IMAGE_BYTES) throw new Error("image is larger than 25 MB");
+  if (ext === ".svg" && svgHasActiveContent(data.toString("utf-8"))) {
+    throw new Error("SVG contains active content (script, event handler, javascript: URL or foreignObject is not allowed)");
+  }
   fs.mkdirSync(mediaDir(), { recursive: true });
   const stem = path.basename(filename, path.extname(filename)).toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "image";
   let target = path.join(mediaDir(), `${id}-${stem}${ext}`);

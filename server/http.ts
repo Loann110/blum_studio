@@ -46,7 +46,13 @@ export function sendFile(res: ServerResponse, file: string, type: string, name?:
   const head: Record<string, string> = {
     "content-type": type,
     "content-length": String(stat.size),
+    "x-content-type-options": "nosniff",
   };
+  // A media URL opened directly runs an SVG as a document: sandbox it so
+  // scripts never run while inline styles still render.
+  if (type === "image/svg+xml") {
+    head["content-security-policy"] = "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:";
+  }
   if (name) head["content-disposition"] = `inline; filename="${name}"`;
   res.writeHead(200, head);
   fs.createReadStream(file).pipe(res);
