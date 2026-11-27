@@ -43,16 +43,24 @@ export class PersistentHistory {
     } catch (e) {
       // No history yet: start empty. Anything else (a torn write, a
       // permission error) is real and the caller must see it.
-      if ((e as NodeJS.ErrnoException).code === "ENOENT") return;
+      if ((e as NodeJS.ErrnoException).code === "ENOENT") {
+        this.past = [];
+        this.future = [];
+        return;
+      }
       throw e;
     }
+    // Exact sync, so a re-read under the design lock drops stale entries too.
     if (raw && typeof raw === "object") {
-      if (Array.isArray((raw as { past?: unknown }).past)) {
-        this.past = ((raw as { past: unknown }).past as Design[]).slice(-this.capacity);
-      }
-      if (Array.isArray((raw as { future?: unknown }).future)) {
-        this.future = ((raw as { future: unknown }).future as Design[]).slice(-this.capacity);
-      }
+      this.past = Array.isArray((raw as { past?: unknown }).past)
+        ? ((raw as { past: unknown }).past as Design[]).slice(-this.capacity)
+        : [];
+      this.future = Array.isArray((raw as { future?: unknown }).future)
+        ? ((raw as { future: unknown }).future as Design[]).slice(-this.capacity)
+        : [];
+    } else {
+      this.past = [];
+      this.future = [];
     }
   }
 
@@ -68,6 +76,9 @@ export class PersistentHistory {
   }
 
   push(doc: Design, coalesce?: string | null): void {
+    // Another process may have pushed since we loaded: re-read under the
+    // caller's design lock so its entries survive ours.
+    this.load();
     const now = Date.now() / 1000;
     if (coalesce && coalesce === this.lastKey && this.past.length && now - this.lastAt <= COALESCE_S) {
       // Same burst (arrow nudges, slider scrub): keep the state from before
@@ -86,6 +97,7 @@ export class PersistentHistory {
   }
 
   undo(current: Design): Design | null {
+    this.load();
     this.lastKey = null;
     if (!this.past.length) return null;
     this.future.push(JSON.parse(JSON.stringify(current)) as Design);
@@ -95,6 +107,7 @@ export class PersistentHistory {
   }
 
   redo(current: Design): Design | null {
+    this.load();
     this.lastKey = null;
     if (!this.future.length) return null;
     this.past.push(JSON.parse(JSON.stringify(current)) as Design);
@@ -110,6 +123,8 @@ export class PersistentHistory {
   }
 
   canUndo(): boolean {
+    // Sync gates a push: answer from disk, not from a stale cache.
+    this.load();
     return this.past.length > 0;
   }
 

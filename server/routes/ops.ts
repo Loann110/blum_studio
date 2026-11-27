@@ -65,11 +65,13 @@ export async function redoRoute(_req: IncomingMessage, res: ServerResponse, id: 
 export async function syncRoute(_req: IncomingMessage, res: ServerResponse, id: string): Promise<void> {
   const design = needDesign(res, id);
   if (!design) return;
-  // Commits already push their pre-change state, so syncing again would add
-  // a post-change duplicate and eat one undo. Only seed an empty stack.
-  const history = historyFor(id);
-  if (!history.canUndo()) history.push(design);
-  sendJson(res, 200, { design, updated: designMtimeMs(id) });
+  await withDesignLock(id, () => {
+    // Commits already push their pre-change state, so syncing again would add
+    // a post-change duplicate and eat one undo. Only seed an empty stack.
+    const history = historyFor(id);
+    if (!history.canUndo()) history.push(design);
+    sendJson(res, 200, { design, updated: designMtimeMs(id) });
+  });
 }
 
 export async function checkRoute(_req: IncomingMessage, res: ServerResponse, id: string): Promise<void> {

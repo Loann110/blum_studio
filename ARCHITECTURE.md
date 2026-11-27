@@ -142,7 +142,7 @@ tool.
 | `main.ts` | Boot, static files and the route table. Listens on `127.0.0.1:${BLUM_PORT}` (8092 by default). |
 | `http.ts`, `paths.ts` | Request and response helpers; where designs, assets and builds live. |
 | `version.ts` | The studio version, read from the root `package.json` (one source of truth). |
-| `store.ts` | Reading, writing and listing designs, validated both ways, with a per-design write lock. |
+| `store.ts` | Reading, writing and listing designs, validated both ways, with a per-design write lock held across processes. |
 | `download.ts` | Safe http(s) download: private addresses refused, redirects capped, 25 MB cap. |
 | `histories.ts` | Undo and redo on disk, shared by HTTP and MCP. |
 | `resources.ts` | Fonts, stickers, photos and masks, for both APIs. |
@@ -156,7 +156,7 @@ tool.
 | `export/` | One shared Chromium (downloaded on first launch or export, never with the install); PNG, PDF, text measurement, background removal, request guard. |
 | `agents/` | Detecting and connecting AI agents (Claude Code, Codex, Muse, Claude Desktop, Cursor), and running Claude Code for the Create page. |
 | `node.d.ts` | Minimal Node type declarations, so the server builds without `@types/node`. |
-| `test/` | The server suite (`node:test`), one file per route group and MCP group, plus `i18n` (resources stay English), `csrf` (cross-site write guard) and `mcp-templates` (examples refuse MCP writes). |
+| `test/` | The server suite (`node:test`), one file per route group and MCP group, plus `i18n` (resources stay English), `csrf` (cross-site write guard), `mcp-templates` (examples refuse MCP writes) and `concurrency` (independent writers keep every item). |
 
 `scripts/build-server.mjs` bundles the server into `server/dist/`: `server.js`,
 `mcp.js` and `connect.js`.

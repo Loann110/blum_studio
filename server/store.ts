@@ -20,9 +20,140 @@ export class InvalidDesign extends Error {}
 const chains = new Map<string, Promise<unknown>>();
 export function withDesignLock<T>(id: string, fn: () => Promise<T> | T): Promise<T> {
   const prev = chains.get(id) ?? Promise.resolve();
-  const next = prev.then(fn, fn) as Promise<T>;
+  const next = prev.then(
+    () => withFileLock(id, fn),
+    () => withFileLock(id, fn),
+  ) as Promise<T>;
   chains.set(id, next.catch(() => {}));
   return next;
+}
+
+/* ---- inter-process lock ---- */
+
+// The chain above orders writers inside one process, but the HTTP server and
+// every MCP process write the same files: a <id>.lock file next to the
+// design, held for the whole read-modify-write, orders the rest.
+const LOCK_WAIT_MS = 30000;
+const LOCK_STALE_MS = 10000;
+const LOCK_LIVE_STALE_MS = 60000;
+
+function lockPath(id: string): string {
+  // Raw ids from HTTP URLs must not walk out of designs/.
+  const safe = [...id].map((c) => (/[A-Za-z0-9_-]/.test(c) ? c : "-")).join("");
+  return path.join(designsDir(), `${safe}.lock`);
+}
+
+function pidAlive(pid: unknown): boolean {
+  if (typeof pid !== "number" || !Number.isInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    // EPERM is a live process owned by someone else; anything else is gone.
+    return (e as NodeJS.ErrnoException).code === "EPERM";
+  }
+}
+
+interface LockClaim {
+  pid: number;
+  at: number;
+  nonce: string;
+}
+
+function readClaim(file: string): { claim: LockClaim | null; mtime: number } {
+  let raw = "";
+  let mtime = 0;
+  try {
+    raw = fs.readFileSync(file, "utf-8");
+    mtime = fs.statSync(file).mtimeMs;
+  } catch {
+    return { claim: null, mtime: 0 }; // gone mid-read: the next create wins
+  }
+  try {
+    const parsed = JSON.parse(raw) as Partial<LockClaim>;
+    if (typeof parsed.pid === "number" && typeof parsed.at === "number" && typeof parsed.nonce === "string") {
+      return { claim: parsed as LockClaim, mtime };
+    }
+  } catch {
+    // torn by a crash mid-write: only its age can judge it
+  }
+  return { claim: null, mtime };
+}
+
+// Exclusive-create the lock. A delete racing our create surfaces as
+// EPERM/EACCES/EBUSY on Windows instead of EEXIST, so retry those briefly
+// like readStable does; a held lock answers at once.
+async function claimLock(file: string, mineRaw: string): Promise<boolean> {
+  let last: unknown;
+  for (let i = 0; i < 8; i++) {
+    try {
+      fs.writeFileSync(file, mineRaw, { flag: "wx" });
+      return true;
+    } catch (e) {
+      const code = (e as NodeJS.ErrnoException).code;
+      if (code === "EEXIST") return false;
+      if (code !== "EPERM" && code !== "EACCES" && code !== "EBUSY") throw e;
+      last = e;
+      await new Promise((r) => setTimeout(r, 25));
+    }
+  }
+  // Still racing after 200 ms with a lock file on disk: wait it out above.
+  if (fs.existsSync(file)) return false;
+  throw last;
+}
+
+async function withFileLock<T>(id: string, fn: () => Promise<T> | T): Promise<T> {
+  const file = lockPath(id);
+  fs.mkdirSync(designsDir(), { recursive: true });
+  const mine: LockClaim = { pid: process.pid, at: Date.now(), nonce: crypto.randomBytes(4).toString("hex") };
+  const mineRaw = JSON.stringify(mine);
+  const deadline = Date.now() + LOCK_WAIT_MS;
+  let wait = 5;
+  for (;;) {
+    if (await claimLock(file, mineRaw)) break;
+    if (Date.now() >= deadline) {
+      throw new Error(`design '${id}' is busy: another process is writing it (gave up after ${LOCK_WAIT_MS / 1000} s)`);
+    }
+    // Someone holds it: steal only a stale one, else back off.
+    const { claim, mtime } = readClaim(file);
+    if (!claim && !mtime) continue; // released between create and read
+    const age = Date.now() - (claim ? claim.at : mtime);
+    // A dead owner recovers at once; a live one is trusted for a minute
+    // first, so a slow write is never cut off while pid reuse still heals.
+    const stale = !claim ? age > LOCK_STALE_MS : !pidAlive(claim.pid) || age > LOCK_LIVE_STALE_MS;
+    if (stale) {
+      // Re-read first: never unlink a lock another process just took.
+      const again = readClaim(file);
+      const same = claim ? again.claim?.nonce === claim.nonce : !again.claim && again.mtime === mtime;
+      if (same) {
+        try {
+          fs.unlinkSync(file);
+        } catch {
+          // lost the race to release it: loop back and try again
+        }
+      }
+      continue;
+    }
+    await new Promise((r) => setTimeout(r, wait));
+    wait = Math.min(wait * 2, 200);
+  }
+  try {
+    return await fn();
+  } finally {
+    // Release only our own claim, so a stale recovery's fresh lock survives us.
+    if (readClaim(file).claim?.nonce === mine.nonce) {
+      for (let i = 0; i < 8; i++) {
+        try {
+          fs.unlinkSync(file);
+          break;
+        } catch (e) {
+          const code = (e as NodeJS.ErrnoException).code;
+          if (code !== "EPERM" && code !== "EACCES") break;
+          Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 25);
+        }
+      }
+    }
+  }
 }
 
 /* ---- magic bytes ---- */
@@ -249,7 +380,12 @@ export function designMtimeMs(id: string): number {
   return fs.statSync(designPath(id)).mtimeMs / 1000;
 }
 
-export async function importImage(id: string, data: Buffer, filename: string): Promise<{ src: string; path: string }> {
+export function importImage(id: string, data: Buffer, filename: string): Promise<{ src: string; path: string }> {
+  // Concurrent imports race for the media name: serialize them like design writes.
+  return withDesignLock(id, () => storeImage(id, data, filename));
+}
+
+async function storeImage(id: string, data: Buffer, filename: string): Promise<{ src: string; path: string }> {
   if (!fs.existsSync(designPath(id))) throw new UnknownDesign(`unknown design '${id}'`);
   const ext = sniffImage(data);
   if (!ext) throw new Error("not a PNG, JPEG, WebP, GIF or SVG image");
