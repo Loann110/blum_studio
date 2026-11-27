@@ -141,6 +141,19 @@ describe('lint: what is really behind a text', () => {
   const checks = (d: Json): string[] =>
     (lintDesign(d).findings as Array<{ check: string }>).map((f) => f.check);
 
+  it('a disc beside the letters, inside the empty part of the box, is not behind them', () => {
+    const title: Json = {
+      id: 'title', name: 'title', type: 'text', x: 540, y: 960, width: 900, height: 300,
+      props: { text: 'Jazz', font: 'Inter', size: 96, weight: 700, color: '#ffffff', align: 'left' },
+    };
+    const disc: Json = { id: 'disc', name: 'disc', type: 'shape', x: 880, y: 960, width: 300, height: 300, props: { shape: 'ellipse', fill: '#f28c28' } };
+    const night = { kind: 'color', color: '#1b2a5a' };
+    assert.ok(!checks(story([disc, title], night)).includes('contrast'));
+    // Right-aligned, the same letters do sit on the disc: still caught.
+    const right = { ...title, props: { ...(title.props as Json), align: 'right' } };
+    assert.ok(checks(story([disc, right], night)).includes('contrast'));
+  });
+
   it('white text on a black band reads', () => {
     assert.deepEqual(checks(story([band('#000000'), text('t', '#ffffff')])), []);
   });

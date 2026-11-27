@@ -118,14 +118,30 @@ function contains(item: Item, x: number, y: number): boolean {
   return x >= b.minX && x <= b.maxX && y >= b.minY && y <= b.maxY;
 }
 
-// Colours under the text's centre and inner corners: the topmost filled
+// Where the letters really are: text sits at the top of its box, aligned
+// left, centre or right, so a wide or tall box is mostly empty. Rotated text
+// keeps the whole box (estimate only: the server measures real fonts).
+function inkBox(it: Item): { minX: number; maxX: number; minY: number; maxY: number } {
+  const box = boundingBox(it);
+  if (it.angle % 360 !== 0) return box;
+  const t = it.props as TextProps;
+  const width = Math.min(textWidth(it), it.width);
+  const lines = Math.max(1, Math.ceil(textWidth(it) / Math.max(1, it.width)));
+  const height = Math.min(it.height, lines * t.size * t.lineHeight);
+  let minX = box.minX;
+  if (t.align === 'center') minX = box.minX + (it.width - width) / 2;
+  else if (t.align === 'right') minX = box.maxX - width;
+  return { minX, maxX: minX + width, minY: box.minY, maxY: box.minY + height };
+}
+
+// Colours under the letters' centre and inner corners: the topmost filled
 // shape drawn before it, else the page. Null when a picture is under it.
 function coloursBehind(
   flat: Placed[],
   index: number,
   page: string[] | null,
 ): string[] | null {
-  const box = boundingBox(flat[index].absolute);
+  const box = inkBox(flat[index].absolute);
   const dx = (box.maxX - box.minX) * 0.4;
   const dy = (box.maxY - box.minY) * 0.4;
   const cx = (box.minX + box.maxX) / 2;
