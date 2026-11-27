@@ -1013,3 +1013,25 @@ describe('composition notes: empty band', () => {
     assert.ok(!(lintDesign(d).findings as Array<{ check: string }>).some((f) => f.check === 'empty_band'));
   });
 });
+
+describe('composition notes: all centred', () => {
+  const story = (items: Json[]): Json => ({
+    version: 1, name: 'T', format: 'story', background: { kind: 'color', color: '#ffffff' }, items,
+  });
+  const text = (id: string, y: number, x = 540, align = 'center', extra: Json = {}): Json => ({
+    id, name: id, type: 'text', x, y, width: 800, height: 140, ...extra,
+    props: { text: 'Hello', font: 'Inter', size: 96, weight: 700, color: '#111111', align },
+  });
+  const checks = (d: Json): string[] => (compositionNotes(d) as Array<{ check: string }>).map((f) => f.check);
+
+  it('four centred texts note the flat alignment', () => {
+    const d = story([text('a', 300), text('b', 700), text('c', 1100), text('d', 1500)]);
+    assert.deepEqual(compositionNotes(d), [{ check: 'all_centered', level: 'info', item: '', message: 'every text is centred: try one left-aligned block or an off-centre hero for tension (fine for invitations and quotes)' }]);
+  });
+
+  it('one left-aligned block, under 4 texts or a hidden fourth give no note', () => {
+    assert.deepEqual(checks(story([text('a', 300), text('b', 700), text('c', 1100), text('d', 1500, 216, 'left')])), []);
+    assert.deepEqual(checks(story([text('a', 300), text('b', 850), text('c', 1400)])), []);
+    assert.deepEqual(checks(story([text('a', 300), text('b', 850), text('c', 1400), text('d', 1500, 540, 'center', { visible: false })])), []);
+  });
+});

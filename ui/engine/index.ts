@@ -68,7 +68,7 @@ export function lintDesign(design: DesignJson): LintJson {
   return lintModel(parseDesign(design as Json));
 }
 
-// Notes on a finished page (empty band), added by check_design only.
+// Notes on a finished page (empty band, all centred), added by check_design only.
 export function compositionNotes(design: DesignJson): LintJson['findings'] {
   return compositionNotesModel(parseDesign(design as Json));
 }

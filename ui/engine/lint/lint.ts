@@ -391,6 +391,17 @@ export function compositionNotes(doc: Design): Finding[] {
       notes.push({ check: 'empty_band', level: 'info', item: '', message: `rows ${from}-${to} % are empty: ${fix} or make the calm deliberate` });
     }
   }
+  // A page where every text is centred reads flat: one off-centre block adds tension.
+  const texts = flat.filter((p) => p.item.type === 'text');
+  if (texts.length >= 4) {
+    const width = canvas.maxX - canvas.minX;
+    const middle = (canvas.minX + canvas.maxX) / 2;
+    const centred = (p: Placed): boolean =>
+      (p.item.props as TextProps).align === 'center' && Math.abs(p.absolute.x - middle) <= width * 0.02;
+    if (texts.every(centred)) {
+      notes.push({ check: 'all_centered', level: 'info', item: '', message: 'every text is centred: try one left-aligned block or an off-centre hero for tension (fine for invitations and quotes)' });
+    }
+  }
   return notes;
 }
 
