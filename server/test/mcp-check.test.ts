@@ -47,6 +47,10 @@ test("resources kinds and bad kind", () => {
   assert.ok(err(listResourcesTool("sounds")).includes("fonts|"));
   assert.ok(err(listResourcesTool("palettes")).includes("fonts|"));
   assert.ok(err(listResourcesTool("fonts", 123)).includes("must be text"));
+  // Accents and case never hide a photo: "Café" finds what "cafe" finds.
+  const cafe = JSON.parse(listResourcesTool("photos", "cafe")) as unknown[];
+  assert.ok(cafe.length > 0);
+  assert.equal((JSON.parse(listResourcesTool("photos", "Café")) as unknown[]).length, cafe.length);
 });
 
 test("text overflow uses the real font and the wrap", async () => {

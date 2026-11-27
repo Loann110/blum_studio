@@ -75,7 +75,7 @@ export function listPhotos(query = "", limit = 100): unknown[] {
   } catch {
     throw new Error(`${photosFile()} is not valid JSON`);
   }
-  if (query) photos = photos.filter((p) => fold(JSON.stringify(p)).includes(query));
+  if (query) photos = photos.filter((p) => fold(JSON.stringify(p)).includes(fold(query)));
   return photos.slice(0, Math.max(1, limit));
 }
 
