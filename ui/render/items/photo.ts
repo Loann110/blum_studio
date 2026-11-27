@@ -5,6 +5,7 @@ import { dropShadow } from './shape.js';
 import { resolveColor } from '../colour.js';
 import { parseVector, serializeVector } from '../../engine/vector.js';
 import { isSafeImageSrc } from '../../engine/sources.js';
+import { isStickerId } from '../../engine/names.js';
 
 // A vector is shown as an image (data URI): even a missed check could not run
 // script or load anything from there. An invalid one shows the empty placeholder.
@@ -15,6 +16,12 @@ function vectorSrc(svg: string | undefined): string {
   } catch {
     return '';
   }
+}
+
+// Refused ids render the placeholder: hand-edited files never reach the engine.
+function stickerSrc(id: string | undefined): string {
+  const s = String(id ?? '');
+  return isStickerId(s) ? `stickers/${s}` : '';
 }
 
 /** One look for a filter preset; our own named mixes. */
@@ -117,7 +124,7 @@ export function photoMarkup(
       item.type === 'vector'
         ? vectorSrc((props as StickerProps).svg)
         : item.type === 'sticker'
-        ? `stickers/${(props as StickerProps).sticker ?? ''}`
+        ? stickerSrc((props as StickerProps).sticker)
         : item.type === 'photo'
           ? ((props as PhotoProps).src ?? '')
           : ((props as ImageProps).src ?? '');

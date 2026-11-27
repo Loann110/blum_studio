@@ -18,7 +18,10 @@ function safeRelative(rest: string): boolean {
 }
 
 export function isSafeImageSrc(src: string): boolean {
-  if (src === '' || src.includes('\\')) return false;
+  if (src === '') return false;
+  // The render always writes url("..."): only a double quote, a backslash or a
+  // control character can break out of it (parentheses and ' are fine inside).
+  if (/["\\\x00-\x1F\x7F]/.test(src)) return false;
   if (/^https?:\/\//i.test(src) || src.toLowerCase().startsWith('data:image/')) return true;
   for (const folder of ASSET_FOLDERS) {
     if (src.startsWith(folder)) return safeRelative(src.slice(folder.length));

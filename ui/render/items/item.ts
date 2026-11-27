@@ -1,5 +1,6 @@
 // Item dispatch: wrap each item by type.
 import type { DesignItem, ShapeProps, TextProps } from '../types.js';
+import { isBlendMode } from '../../engine/names.js';
 import { boxStyle, esc, num } from '../util.js';
 import { textMarkup } from './text.js';
 import { shapeMarkup } from './shape.js';
@@ -42,7 +43,8 @@ function itemMarkup(
   const opacity = num(item.opacity, 1);
   const props = item.props ?? {};
   const parts = boxStyle(u, x, y, w, h, angle, opacity);
-  if (typeof item.blend === 'string' && item.blend !== '' && item.blend !== 'normal') {
+  // A hand-edited blend never reached validation: skip unknown modes.
+  if (typeof item.blend === 'string' && item.blend !== '' && item.blend !== 'normal' && isBlendMode(item.blend)) {
     parts.push(`mix-blend-mode:${item.blend}`);
   }
   const base = parts.join(';');

@@ -1,6 +1,6 @@
 // Engine text field updates.
 import type { Item, TextProps } from '../../model.js';
-import { isColor, validFieldKey } from '../../names.js';
+import { isColor, isFontName, validFieldKey } from '../../names.js';
 import { isSafeImageSrc } from '../../sources.js';
 import { fail } from '../../errors.js';
 import { needFor } from './common.js';
@@ -28,6 +28,7 @@ export function applyTextField(
       if (key === 'text') t.text = s;
       else if (key === 'font') {
         if (s === '') fail('font must not be empty');
+        if (!isFontName(s)) fail(`bad font '${s}'`);
         t.font = s;
       } else if (key === 'align') {
         if (s !== 'left' && s !== 'center' && s !== 'right' && s !== 'justify') {

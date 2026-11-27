@@ -2,7 +2,7 @@
 import type { Item, StickerProps, ImageProps, VectorProps } from '../../model.js';
 import { parseVector } from '../../vector.js';
 import { isSafeImageSrc } from '../../sources.js';
-import { isColor } from '../../names.js';
+import { isColor, isStickerId } from '../../names.js';
 import { fail } from '../../errors.js';
 import { applyFilterField, applyShadow, needFor } from './common.js';
 
@@ -29,6 +29,7 @@ export function applyStickerField(
       need(0, 'text');
       if (key === 'sticker') {
         if (s === '') fail('sticker must not be empty');
+        if (!isStickerId(s)) fail(`bad sticker id '${s}'`);
         st.sticker = s;
       } else {
         if (s !== '' && !isColor(s)) fail(`bad color '${s}'`);

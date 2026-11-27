@@ -11,8 +11,30 @@ function isAlnum(c: string): boolean {
   );
 }
 
+const RGBA_RE = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d*\.?\d+)\s*\)$/;
+
+function isRgbaColor(s: string): boolean {
+  const m = RGBA_RE.exec(s);
+  if (!m) return false;
+  if (Number(m[1]) > 255 || Number(m[2]) > 255 || Number(m[3]) > 255) return false;
+  const alpha = Number(m[4]);
+  return alpha >= 0 && alpha <= 1;
+}
+
 export function isColor(s: string): boolean {
-  return isHexColor(s) || s.startsWith('rgba');
+  return isHexColor(s) || isRgbaColor(s);
+}
+
+// Quotes or semicolons would break out of font-family:'...'.
+export function isFontName(s: string): boolean {
+  return /^[A-Za-z0-9 \-]+$/.test(s);
+}
+
+// A catalogue path cannot climb out (no .., no empty parts).
+export function isStickerId(s: string): boolean {
+  if (!/^[A-Za-z0-9_.\-/]+$/.test(s)) return false;
+  const parts = s.split('/');
+  return !parts.includes('') && !parts.includes('.') && !parts.includes('..');
 }
 
 export function validFieldKey(s: string): boolean {

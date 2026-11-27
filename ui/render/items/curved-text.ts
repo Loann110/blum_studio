@@ -2,7 +2,7 @@
 import type { DesignItem, TextProps } from '../types.js';
 import { esc, hash, num } from '../util.js';
 import { resolveColor } from '../colour.js';
-import { FONT_FALLBACK, textCaseFilter } from './text-style.js';
+import { fontStack, textCaseFilter } from './text-style.js';
 
 /** Box height a curved text needs: its lines, the arc rise and the letters' height. */
 export function curvedTextHeight(p: TextProps): number {
@@ -66,7 +66,7 @@ export function curvedText(
     const pid = `cv${Math.abs(hash(`${item.id}:${i}`))}`;
     parts.push(`<defs><path id="${pid}" d="${d}" fill="none"/></defs>`);
     const attrs = [
-      `font-family="'${esc(p.font || 'Inter')}', ${FONT_FALLBACK}"`,
+      `font-family="${fontStack(p.font)}"`,
       `font-size="${size}"`,
       `font-weight="${num(p.weight, 400) || 400}"`,
       `font-style="${p.italic ? 'italic' : 'normal'}"`,

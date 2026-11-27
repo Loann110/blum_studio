@@ -4,7 +4,7 @@ import { esc, hash, num } from '../util.js';
 import { resolveColor } from '../colour.js';
 import { curvedText } from './curved-text.js';
 import { resolveSrc } from './photo.js';
-import { FONT_FALLBACK, textCaseFilter } from './text-style.js';
+import { fontStack, textCaseFilter } from './text-style.js';
 
 /** `2px 3px 8px color`, or empty when the shadow is off. Lengths scale with the box. */
 function textShadow(
@@ -95,7 +95,7 @@ export function textMarkup(
     if (p.strikethrough) deco.push('line-through');
     const style = [
       base,
-      `font-family:'${esc(p.font || 'Inter')}', ${FONT_FALLBACK}`,
+      `font-family:${fontStack(p.font)}`,
       `font-size:${u(num(p.size, 64))}`,
       `font-weight:${num(p.weight, 400) || 400}`,
       `font-style:${p.italic ? 'italic' : 'normal'}`,

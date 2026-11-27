@@ -20,10 +20,12 @@ import {
   FILTER_PRESETS,
   isBlendMode,
   isColor,
+  isFontName,
   isLineCap,
   isMask,
   isPatternName,
   isShapeName,
+  isStickerId,
   validFieldKey,
 } from './names.js';
 
@@ -125,6 +127,7 @@ export function checkItem(it: Item, where: string, out: string[]): void {
   if (it.type === 'text') {
     const t = it.props as TextProps;
     if (t.font === '') out.push(`${where}: '${it.id}' font is empty`);
+    else if (!isFontName(t.font)) out.push(`${where}: '${it.id}' bad font '${t.font}'`);
     if (!(t.size > 0) || t.size > 1000) {
       out.push(`${where}: '${it.id}' font size must be 0..1000`);
     }
@@ -235,6 +238,7 @@ export function checkItem(it: Item, where: string, out: string[]): void {
   } else if (it.type === 'sticker') {
     const st = it.props as StickerProps;
     if (st.sticker === '') out.push(`${where}: '${it.id}' sticker id is empty`);
+    else if (!isStickerId(st.sticker)) out.push(`${where}: '${it.id}' bad sticker id '${st.sticker}'`);
     if (st.tint !== '' && !isColor(st.tint)) {
       out.push(`${where}: '${it.id}' bad tint`);
     }

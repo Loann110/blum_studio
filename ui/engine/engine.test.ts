@@ -12,6 +12,7 @@ import {
   snapMoveAt,
   validateDesign,
 } from './index.js';
+import { renderDesign } from '../render/render.js';
 
 /* ---- helpers ---- */
 
@@ -707,5 +708,97 @@ describe('safe image sources', () => {
       assert.equal(((out.items as Json[])[1].props as Json).textFill, src);
       assert.equal((out.background as Json).image, src);
     }
+  });
+});
+
+describe('css injection', () => {
+  const story = (items: Json[] = []): Json => ({
+    version: 1, name: 'T', format: 'story',
+    background: { kind: 'color', color: '#ffffff' }, items,
+  });
+  const text = (props: Json, extra: Json = {}): Json => ({
+    id: 't', name: 't', type: 'text', x: 540, y: 960, width: 800, height: 200,
+    ...extra,
+    props: { text: 'Hi', font: 'Inter', size: 96, color: '#111111', ...props },
+  });
+  const photo = (src: string): Json => ({
+    id: 'p', name: 'p', type: 'photo', x: 540, y: 960, width: 600, height: 600,
+    props: { src, mask: 'rect' },
+  });
+  const sticker = (id: string): Json => ({
+    id: 's', name: 's', type: 'sticker', x: 540, y: 960, width: 300, height: 300,
+    props: { sticker: id },
+  });
+
+  it('a colour smuggling a declaration is rejected', () => {
+    const bad = 'rgba(0,0,0,1);background:url(x)';
+    assert.ok(validateDesign(story([text({ color: bad })])).length > 0);
+    assert.throws(() => applyOps(story(), [{ op: 'add', item: text({ color: bad }) }]), /bad text color/);
+  });
+
+  it('the rgba grammar is strict', () => {
+    for (const color of ['rgba(300,0,0,1)', 'rgba(0,0,0,1.5)', 'rgba(0,0,0)', 'rgba(0,0,0,1) ']) {
+      assert.ok(validateDesign(story([text({ color })])).length > 0, color);
+    }
+    for (const color of ['rgba(0,0,0,0)', 'rgba(255,255,255,1)', 'rgba(47, 124, 246, 0.6)', 'rgba(0,0,0,.5)']) {
+      assert.deepEqual(validateDesign(story([text({ color })])), [], color);
+    }
+  });
+
+  it('a font breaking out of font-family is rejected', () => {
+    const bad = "x');background:url(y);a:('";
+    assert.ok(validateDesign(story([text({ font: bad })])).length > 0);
+    assert.throws(() => applyOps(story(), [{ op: 'add', item: text({ font: bad }) }]), /bad font/);
+    const one = applyOps(story(), [{ op: 'add', item: text({}) }]) as Json;
+    assert.throws(() => applyOps(one, [{ op: 'update', id: 't', patch: { font: bad } }]), /bad font/);
+  });
+
+  it('a src breaking out of url() is rejected', () => {
+    const bad = 'media/a.png");x="y';
+    assert.ok(validateDesign(story([photo(bad)])).length > 0);
+    assert.throws(() => applyOps(story(), [{ op: 'add', item: photo(bad) }]), /bad image src/);
+    const one = applyOps(story(), [{ op: 'add', item: photo('media/a.png') }]) as Json;
+    assert.throws(() => applyOps(one, [{ op: 'update', id: 'p', patch: { src: bad } }]), /bad image src/);
+    // Parentheses and ' are harmless inside url("..."): real URLs and SVG data use them.
+    for (const ok of ['https://example.com/File_(1).jpg', "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>"]) {
+      assert.deepEqual(validateDesign(story([photo(ok)])), [], ok);
+    }
+  });
+
+  it('a blend smuggling a declaration is rejected', () => {
+    const bad = 'multiply;x:1';
+    assert.ok(validateDesign(story([text({}, { blend: bad })])).length > 0);
+    assert.throws(() => applyOps(story(), [{ op: 'add', item: text({}, { blend: bad }) }]), /bad blend mode/);
+  });
+
+  it('a sticker escaping the catalogue is rejected', () => {
+    const bad = '../../secret';
+    assert.ok(validateDesign(story([sticker(bad)])).length > 0);
+    assert.throws(() => applyOps(story(), [{ op: 'add', item: sticker(bad) }]), /bad sticker id/);
+    const one = applyOps(story(), [{ op: 'add', item: sticker('blum/pineapple.svg') }]) as Json;
+    assert.throws(() => applyOps(one, [{ op: 'update', id: 's', patch: { sticker: bad } }]), /bad sticker id/);
+  });
+
+  it('valid colours and fonts still pass', () => {
+    for (const color of ['#fff', '#ffffff', 'rgba(47, 124, 246, 0.6)']) {
+      assert.deepEqual(validateDesign(story([text({ color })])), [], color);
+    }
+    for (const font of ['Playfair Display', 'DM Serif Text']) {
+      assert.deepEqual(validateDesign(story([text({ font })])), [], font);
+    }
+  });
+
+  it('a hand-made design renders none of the injected declarations', () => {
+    const html = renderDesign(story([
+      text({ color: 'rgba(0,0,0,1);background:url(x)', font: "x');background:url(y);a:('" }, { blend: 'multiply;x:1' }),
+      photo('media/a.png");x="y'),
+      sticker('../../secret'),
+      { ...sticker('x");x="y'), id: 's2', name: 's2' },
+    ]) as never);
+    for (const needle of ['background:url(', 'url(x)', 'url(y)', ';x:1', '../', 'a.png&quot;', 'stickers/x&quot;']) {
+      assert.ok(!html.includes(needle), `leaked ${needle}`);
+    }
+    assert.ok(html.includes("font-family:'Inter'"));
+    assert.ok(html.includes('color:#111111'));
   });
 });
