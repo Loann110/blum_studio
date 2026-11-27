@@ -2,6 +2,7 @@
 // Every design starts empty (user decision): no tool copies a design.
 import fs from "node:fs";
 import { designRulesFile } from "../../paths.js";
+import { fold } from "../../resources.js";
 import { compactDesign } from "../compact.js";
 import { itemExamplesDoc } from "../item-examples.js";
 import { forget as forgetHistory } from "../../histories.js";
@@ -18,9 +19,9 @@ export function overviewTool(): string {
 Short replies: apply_ops gives ok + touched ids, get_design one line
 per object, preview returns an image (region=[x,y,w,h] zooms).
 list_formats shows every size. The design rules follow below, and
-style_guide('types') lists the layout archetypes to pick one. Floor:
-text in the safe zone; body >= minimum; contrast >= 4.5:1; never
-cover a face. Start from create_design + add ops, never copy
+style_guide('<brief in a few words>') returns the matching archetype.
+Floor: text in the safe zone; body >= minimum; contrast >= 4.5:1;
+never cover a face. Start from create_design + add ops, never copy
 (api_info items: full examples). Preview each batch; check_design,
 then export.
 
@@ -148,10 +149,30 @@ export function styleGuideTool(topic: unknown = ""): string {
       .join("\n\n");
   }
   const key = typeof topic === "string" ? topic.toLowerCase() : "";
-  if (!(key in GUIDES)) {
-    return toolError("Unknown topic. Try: " + Object.keys(GUIDES).sort().join(", "));
+  if (key in GUIDES) return GUIDES[key];
+  // Anything else is brief text, matched against the picker's keyword
+  // lists; a type: id that is not listed stays a plain lookup miss.
+  if (typeof topic === "string" && !key.startsWith("type:")) {
+    const found = matchBrief(topic, GUIDES);
+    if (found) return found;
+    return toolError("Unknown topic. Try: " + Object.keys(GUIDES).sort().join(", ") + ", or describe the brief in a few words");
   }
-  return GUIDES[key];
+  return toolError("Unknown topic. Try: " + Object.keys(GUIDES).sort().join(", "));
+}
+
+// The type picker already maps brief words to an archetype, so the
+// match reads its lists instead of keeping a second copy of them.
+function matchBrief(brief: string, guides: Record<string, string>): string | null {
+  // Whole words only, so "news" does not hit "new".
+  const words = (s: string): string => ` ${fold(s).replace(/[^a-z0-9]+/g, " ").trim()} `;
+  const folded = words(brief);
+  let best: { id: string; hits: string[] } | null = null;
+  for (const m of (guides["types"] ?? "").matchAll(/\(([^)]*)\)\s*->\s*(type:[a-z-]+)/g)) {
+    const hits = m[1].split(",").map((w) => w.trim()).filter((w) => words(w).trim() && folded.includes(words(w)));
+    if (hits.length > 0 && (!best || hits.length > best.hits.length)) best = { id: m[2], hits };
+  }
+  if (!best || !(best.id in guides)) return null;
+  return `${best.id} (matched: ${best.hits.join(", ")})\n${guides[best.id]}`;
 }
 
 export function listFormatsTool(): string {

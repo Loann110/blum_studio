@@ -82,6 +82,24 @@ test("style_guide full and topics", () => {
   assert.ok(styleGuideTool("nope").includes("Unknown topic"));
 });
 
+test("style_guide brief picks the archetype", () => {
+  const concert = styleGuideTool("jazz concert friday night");
+  assert.ok(concert.startsWith("type:announcement (matched: concert)"), concert.slice(0, 120));
+  assert.ok(concert.includes("date-and-place bar"));
+  const sale = styleGuideTool("soldes -30 % ce weekend");
+  assert.ok(sale.startsWith("type:sale-offer (matched: -30 %, soldes)"), sale.slice(0, 120));
+  // Whole words: "news" is an announcement, not the launch keyword "new"; French briefs match too.
+  assert.ok(styleGuideTool("news of the week").startsWith("type:announcement"));
+  assert.ok(styleGuideTool("mariage de Léa et Tom").startsWith("type:event-invitation"));
+  const promo = styleGuideTool("huge promo, all prices cut this weekend");
+  assert.ok(promo.startsWith("type:sale-offer"), promo.slice(0, 120));
+  assert.ok(promo.includes("matched: promo"));
+  assert.ok(styleGuideTool("photo").includes("calm area"));
+  const miss = JSON.parse(styleGuideTool("zzz qqq")) as { ok: boolean; error: string };
+  assert.equal(miss.ok, false);
+  assert.ok(miss.error.includes("Unknown topic") && miss.error.includes("or describe the brief in a few words"));
+});
+
 test("create happy and bad format", () => {
   const made = make("Summer drop", "post");
   assert.equal((made as unknown as { design: { format: string } }).design.format, "post");
