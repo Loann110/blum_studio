@@ -9,6 +9,7 @@ import {
   EngineError,
   applyOps,
   lintDesign,
+  compositionNotes,
   snapMoveAt,
   validateDesign,
 } from './index.js';
@@ -984,5 +985,31 @@ describe('full-bleed photo corners', () => {
       }],
     };
     assert.equal(radiusOf(applyOps(saved, []) as Json), 48);
+  });
+});
+
+describe('composition notes: empty band', () => {
+  const story = (items: Json[]): Json => ({
+    version: 1, name: 'T', format: 'story', background: { kind: 'color', color: '#ffffff' }, items,
+  });
+  const rect = (id: string, y: number, height = 300): Json => ({ id, name: id, type: 'shape', x: 540, y, width: 800, height, props: { shape: 'rect', fill: '#111111' } });
+
+  it('items in the top half only note the empty foot', () => {
+    const notes = compositionNotes(story([rect('a', 150), rect('b', 450), rect('c', 810)]));
+    assert.deepEqual(notes, [{ check: 'empty_band', level: 'info', item: '', message: 'rows 50-100 % are empty: anchor the foot (date bar, photo, CTA) or make the calm deliberate' }]);
+  });
+
+  it('a full-page photo, spread items or under 3 items give no note', () => {
+    const photo: Json = { id: 'p', name: 'p', type: 'photo', x: 540, y: 960, width: 1080, height: 1920, props: { src: 'https://example.com/a.jpg' } };
+    assert.deepEqual(compositionNotes(story([photo, rect('a', 150), rect('b', 450)])), []);
+    assert.deepEqual(compositionNotes(story([rect('a', 250, 500), rect('b', 960, 500), rect('c', 1670, 500)])), []);
+    assert.deepEqual(compositionNotes(story([rect('a', 150), rect('b', 450)])), []);
+    const middle = compositionNotes(story([rect('a', 150), rect('b', 1650), rect('c', 1770)]));
+    assert.ok(middle[0].message.startsWith('rows 16-78 % are empty: spread the content'), middle[0]?.message);
+  });
+
+  it('the note stays out of lintDesign and its score', () => {
+    const d = story([rect('a', 150), rect('b', 450), rect('c', 810)]);
+    assert.ok(!(lintDesign(d).findings as Array<{ check: string }>).some((f) => f.check === 'empty_band'));
   });
 });

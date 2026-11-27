@@ -1,7 +1,7 @@
 // Blum TS engine: same behaviour as blumcore, no DOM, no Node-only API.
 // The editor bundle and Node import it alike.
 import type { Finding, LintReport } from './lint/lint.js';
-import { lintModel } from './lint/lint.js';
+import { compositionNotes as compositionNotesModel, lintModel } from './lint/lint.js';
 import type { Design } from './model.js';
 import { validateModel } from './validate.js';
 import type { Guide, SnapResult } from './geometry.js';
@@ -66,6 +66,11 @@ export function validateDesign(design: DesignJson): string[] {
 // Design checks plus a 0..100 care score.
 export function lintDesign(design: DesignJson): LintJson {
   return lintModel(parseDesign(design as Json));
+}
+
+// Notes on a finished page (empty band), added by check_design only.
+export function compositionNotes(design: DesignJson): LintJson['findings'] {
+  return compositionNotesModel(parseDesign(design as Json));
 }
 
 // Snap a drag against siblings and canvas; returns the fixed delta.

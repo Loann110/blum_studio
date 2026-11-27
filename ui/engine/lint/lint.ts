@@ -352,6 +352,48 @@ export function lintModel(doc: Design): LintReport {
   return { findings, score: careScore(findings) };
 }
 
+// Composition notes, kept out of lintModel: they judge a finished page, and the
+// golden cases replay lintModel on small test fixtures. check_design adds them.
+export function compositionNotes(doc: Design): Finding[] {
+  const notes: Finding[] = [];
+  const flat: Placed[] = [];
+  flatten(doc.items, 0, 0, 0, flat);
+  const canvas = canvasBox(doc);
+  const height = canvas.maxY - canvas.minY;
+  // shortcut: horizontal bands only; add a vertical pass if side gutters matter
+  const rows: [number, number][] = [];
+  for (const p of flat) {
+    // A group's box is its children: counting it would hide gaps between them.
+    if (p.item.type === 'group') continue;
+    const b = boundingBox(p.absolute);
+    const lo = Math.max(b.minY, canvas.minY);
+    const hi = Math.min(b.maxY, canvas.maxY);
+    if (hi > lo) rows.push([lo, hi]);
+  }
+  // Under 3 pieces the page is still being built, not a composition to judge.
+  if (rows.length >= 3) {
+    rows.sort((a, b) => a[0] - b[0]);
+    let best: [number, number] | null = null;
+    let covered = canvas.minY;
+    const consider = (start: number, end: number): void => {
+      if (end - start > height * 0.25 && (!best || end - start > best[1] - best[0])) best = [start, end];
+    };
+    for (const [lo, hi] of rows) {
+      if (lo > covered) consider(covered, lo);
+      if (hi > covered) covered = hi;
+    }
+    if (covered < canvas.maxY) consider(covered, canvas.maxY);
+    const band = best as [number, number] | null;
+    if (band) {
+      const from = Math.round(((band[0] - canvas.minY) / height) * 100);
+      const to = Math.round(((band[1] - canvas.minY) / height) * 100);
+      const fix = to === 100 ? 'anchor the foot (date bar, photo, CTA)' : 'spread the content';
+      notes.push({ check: 'empty_band', level: 'info', item: '', message: `rows ${from}-${to} % are empty: ${fix} or make the calm deliberate` });
+    }
+  }
+  return notes;
+}
+
 // The one care score: errors cost 20, warnings 8, notes are for the eye only.
 export function careScore(findings: { level: string }[]): number {
   let score = 100;

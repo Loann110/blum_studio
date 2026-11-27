@@ -1,7 +1,7 @@
 // Server-side lint: the engine's report, with text overflow re-checked
 // against the real fonts (the engine only estimates from character counts).
 import { lintDesign } from "../ui/engine/index.js";
-import { applyCase, careScore } from "../ui/engine/index.js";
+import { applyCase, careScore, compositionNotes } from "../ui/engine/index.js";
 import { downloadImage, resolvePublicAddresses, type ResolveFn } from "./download.js";
 import { wrapText } from "./export/measure.js";
 
@@ -91,5 +91,6 @@ export async function lintMeasured(design: Json, resolve: ResolveFn = resolvePub
   remote.forEach(({ id, src }, i) => {
     if (broken[i]) kept.push({ check: "image_failed", level: "error", item: id, message: `'${id}' image failed to load: ${src} (renders empty; pick another src)` });
   });
+  kept.push(...compositionNotes(design));
   return { findings: kept, score: careScore(kept) };
 }

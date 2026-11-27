@@ -100,7 +100,8 @@ const DOCS: Record<string, string> = {
     "check_design returns findings (error|warn|info) and a 0..100 score. " +
     "Checks: text_too_small (below the format minimum: list_formats), text_overflow (real font, wrapped), unsafe_zone and " +
     "off_canvas (text only: pictures and shapes may bleed), overlap (text on text, or a solid shape over text, groups included), " +
-    "covered (note: a picture drawn over text, check it in preview), empty_design, " +
+    "covered (note: a picture drawn over text, check it in preview), empty_design, empty_band " +
+    "(note: a strip taller than 25 % of the page holds nothing), " +
     "contrast (WCAG, against what is really behind the text; contrast_picture note on photos), empty_text, photo_empty " +
     "(warn when the frame has no image), font_families (warn past 2 families). " +
     "image_failed (error when a remote image does not load: pick another src). " +
