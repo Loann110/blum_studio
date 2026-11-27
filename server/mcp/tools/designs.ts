@@ -52,7 +52,8 @@ const DOCS: Record<string, string> = {
     "or {anchors: {id: top|bottom|left|right|center}}), " +
     "set_background {background}: {kind: color, color} for a flat colour " +
     "(color needs a color), {kind: gradient, angle, stops: [{at, color}]} " +
-    "(2+ stops; radial: true gives a round halo from the center instead of a linear sweep), " +
+    "(2+ stops; angle in degrees like CSS: 180 = top to bottom, 90 = left to right; " +
+    "radial: true gives a round halo from the center instead of a linear sweep), " +
     "{kind: pattern, pattern: dots|grid|stripes|checker|waves|crosses|zigzag|" +
     "triangles|hexagons|diamonds|scallops|bricks|hearts|stars|zellige|scales|arches, patternColor, patternBackground, " +
     "patternScale (0.25..4, base tile 60px), patternAngle, patternWeight (0.25..4)} " +
@@ -63,14 +64,14 @@ const DOCS: Record<string, string> = {
     "lineHeight, letterSpacing, decoration, strikethrough, textCase, background, " +
     "list (none|bullet|numbered), curve (none|up|down), curveAmount (0..400), " +
     "shrinkToFit, minSize, shadowColor, shadowX, shadowY, shadowBlur, " +
-    "stroke, strokeWidth, gradient ({angle, stops} or {radial: true, stops}, clipped to the glyphs), " +
+    "stroke, strokeWidth, gradient ({angle, stops} or {radial: true, stops}, angle like set_background, clipped to the glyphs), " +
     "hollow, haloColor, haloBlur, edge (0..100 torn edge in px, 0 = straight cut), textFill. " +
     "Photo: src, mask (rect|circle|arch|star|blob|heart), cornerRadius, " +
     "outlineColor, outlineWidth (0..100), " +
     "filterPreset (original|vivid|warm|cold|mono|noir|faded|vintage|" +
     "dramatic), brightness, contrast, saturation (-100..100), hue " +
     "(-180..180), blur, vignette (0..100), grayscale, sepia. " +
-    "Shape: fill (a color, {color}, or {angle|radial: true, stops} for a gradient fill), " +
+    "Shape: fill (a color, {color}, or {angle|radial: true, stops} for a gradient fill, angle like set_background), " +
     "stroke, strokeWidth, cornerRadius, edge (0..100 torn edge in px, 0 = straight cut), shape, shadowColor, " +
     "shadowX, shadowY, shadowBlur, bend (-1..1), headSize (0..500, 0 " +
     "= auto), lineStyle (solid|dashed|dotted), startCap/endCap (none|arrow|triangle|circle|square|bar), points (3..12), " +

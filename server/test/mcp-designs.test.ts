@@ -45,6 +45,7 @@ test("docs name only topics and rules that exist", () => {
   assert.ok(lint.includes("list_formats") && !lint.includes("<30px"));
   assert.ok(lint.includes("never lower") && lint.includes("covered"));
   assert.ok(apiInfoTool("ops").includes("2 or more"));
+  assert.ok(apiInfoTool("ops").includes("180 = top to bottom"));
 });
 
 test("api_info topics and bad topic", () => {
