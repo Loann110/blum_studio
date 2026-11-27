@@ -129,6 +129,23 @@ export async function renameDesign(
   ).json()) as { design: Design; updated: number };
 }
 
+export interface AgentUsage {
+  calls: number;
+  first: number;
+  last: number;
+  out: number;
+  back: number;
+  input: number;
+  usd: number;
+}
+
+/** The agent's estimated usage; {} when no MCP call touched this design. */
+export async function getUsage(id: string): Promise<Partial<AgentUsage>> {
+  return (await (
+    await call(`/api/designs/${encodeURIComponent(id)}/usage`)
+  ).json()) as Partial<AgentUsage>;
+}
+
 export async function checkDesign(
   id: string,
 ): Promise<{ findings: { check: string; level: string; item: string; message: string }[]; score: number }> {

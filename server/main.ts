@@ -5,7 +5,7 @@ import path from "node:path";
 import { closeBrowser } from "./export/browser.js";
 import { fail, mimeFor, postAllowed, sendFile } from "./http.js";
 import { assetsDir, mediaDir, uiDir } from "./paths.js";
-import { createRoute, deleteRoute, duplicateRoute, getRoute, listRoute, mtimeRoute, renameRoute, stateRoute } from "./routes/designs.js";
+import { createRoute, deleteRoute, duplicateRoute, getRoute, listRoute, mtimeRoute, renameRoute, stateRoute, usageRoute } from "./routes/designs.js";
 import { exportRoute, pdfRoute, pngRoute } from "./routes/export.js";
 import { mediaRoute, uploadRoute } from "./routes/media.js";
 import { checkRoute, opsRoute, redoRoute, syncRoute, undoRoute } from "./routes/ops.js";
@@ -77,6 +77,7 @@ const API: Array<{ method: string; match: RegExp; run: (req: IncomingMessage, re
   { method: "PUT", match: /^\/api\/designs\/([^/]+)$/, run: async (q, s, m) => renameRoute(q, s, decodeURIComponent(m[1])) },
   { method: "GET", match: /^\/api\/designs\/([^/]+)\/state$/, run: (q, s, m) => stateRoute(q, s, decodeURIComponent(m[1])) },
   { method: "GET", match: /^\/api\/designs\/([^/]+)\/mtime$/, run: (q, s, m) => mtimeRoute(q, s, decodeURIComponent(m[1])) },
+  { method: "GET", match: /^\/api\/designs\/([^/]+)\/usage$/, run: (q, s, m) => usageRoute(q, s, decodeURIComponent(m[1])) },
   { method: "POST", match: /^\/api\/designs\/([^/]+)\/ops$/, run: (q, s, m) => opsRoute(q, s, decodeURIComponent(m[1])) },
   { method: "POST", match: /^\/api\/designs\/([^/]+)\/undo$/, run: (q, s, m) => undoRoute(q, s, decodeURIComponent(m[1])) },
   { method: "POST", match: /^\/api\/designs\/([^/]+)\/redo$/, run: (q, s, m) => redoRoute(q, s, decodeURIComponent(m[1])) },

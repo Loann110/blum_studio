@@ -1,7 +1,7 @@
 // Editor review panel: checks and care score.
 import { findItem, type DesignItem, type EditorState } from '../state.js';
 import { hooks, loadNote } from './hooks.js';
-import { checkDesign } from '../api.js';
+import { checkDesign, getUsage, type AgentUsage } from '../api.js';
 
 interface PanelFinding {
   check: string;
@@ -33,6 +33,17 @@ function friendly(f: PanelFinding): string {
   });
 }
 
+function shortTokens(n: number): string {
+  return n >= 1000 ? `${Math.round(n / 1000)}k` : String(n);
+}
+
+/** One quiet sentence: calls, elapsed time, tokens and the estimated dollars. */
+function usageLine(u: AgentUsage): string {
+  const seconds = Math.max(0, Math.round(u.last - u.first));
+  const time = seconds < 60 ? `${seconds} s` : `${Math.floor(seconds / 60)} min ${seconds % 60} s`;
+  return `${u.calls} call${u.calls === 1 ? '' : 's'} · ${time} · ${shortTokens(u.input)} in · ${shortTokens(u.out)} out · ~$${u.usd.toFixed(2)} (estimate)`;
+}
+
 export async function renderReview(root: HTMLElement, st: EditorState): Promise<void> {
   if (!hooks) return;
   const box = document.createElement('div');
@@ -44,6 +55,8 @@ export async function renderReview(root: HTMLElement, st: EditorState): Promise<
   btn.className = 'btn';
   btn.innerHTML = '<i data-lucide="shield"></i> Check design';
   const findings = document.createElement('div');
+  const agent = document.createElement('div');
+  agent.className = 'agent-usage';
   btn.addEventListener('click', () => void refresh());
   const refresh = async (): Promise<void> => {
     if (!hooks) return;
@@ -100,8 +113,14 @@ export async function renderReview(root: HTMLElement, st: EditorState): Promise<
       findings.append(loadNote(`Check failed: ${(err as Error).message}`));
     }
   };
-  box.append(score, btn);
+  box.append(score, btn, agent);
 
   root.append(box, findings);
   await refresh();
+  try {
+    const usage = await getUsage(st.id);
+    if (usage.calls) agent.textContent = `Agent: ${usageLine(usage as AgentUsage)}`;
+  } catch {
+    // the estimate is optional; the score still shows
+  }
 }

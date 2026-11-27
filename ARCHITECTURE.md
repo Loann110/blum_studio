@@ -145,6 +145,7 @@ tool.
 | `store.ts` | Reading, writing and listing designs, validated both ways, with a per-design write lock held across processes. |
 | `download.ts` | Safe http(s) download: private addresses refused, redirects capped, 25 MB cap. |
 | `histories.ts` | Undo and redo on disk, shared by HTTP and MCP. |
+| `usage.ts` | Per-design agent usage estimate (calls, tokens, time, dollars), one sidecar in `designs/.usage/`, recorded by every MCP call. |
 | `resources.ts` | Fonts, stickers, photos and masks, for both APIs. |
 | `lint.ts` | The engine's design check, with text overflow measured on the real fonts. |
 | `sessions.ts` | Create-page sessions, stored in `designs/.sessions/`. |

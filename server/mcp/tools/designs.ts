@@ -6,6 +6,7 @@ import { fold } from "../../resources.js";
 import { compactDesign } from "../compact.js";
 import { itemExamplesDoc } from "../item-examples.js";
 import { forget as forgetHistory } from "../../histories.js";
+import { forgetUsage } from "../../usage.js";
 import { noteDesignCreated } from "../../sessions.js";
 import { UnknownDesign, createDesign, deleteDesign, isTemplateId, listDesigns } from "../../store.js";
 import { CUSTOM_MAX, CUSTOM_MIN, FORMATS } from "../../../ui/engine/index.js";
@@ -216,6 +217,7 @@ export async function deleteDraftTool(id: unknown): Promise<string> {
       throw e;
     }
     forgetHistory(id as string);
+    forgetUsage(id as string);
     return JSON.stringify({ deleted: id });
   });
 }

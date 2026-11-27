@@ -40,6 +40,13 @@
   color: #b42d32;
 }
 
+/* The MCP agent's estimated usage: one quiet line under the score. */
+.agent-usage {
+  flex-basis: 100%;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .finding {
   font-size: 12px;
   border-left: 3px solid var(--muted);

@@ -2,6 +2,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { fail, needDesign, readJson, sendJson } from "../http.js";
 import { historyFor, forget as forgetHistory } from "../histories.js";
+import { forgetUsage, readUsage } from "../usage.js";
 import {
   InvalidDesign,
   UnknownDesign,
@@ -67,6 +68,7 @@ export async function deleteRoute(_req: IncomingMessage, res: ServerResponse, id
       throw e;
     }
     forgetHistory(id);
+    forgetUsage(id);
     sendJson(res, 200, { deleted: id });
   });
 }
@@ -79,6 +81,11 @@ export async function stateRoute(_req: IncomingMessage, res: ServerResponse, id:
     const err = e as { status: number; detail: string };
     fail(res, err.status, err.detail);
   }
+}
+
+export async function usageRoute(_req: IncomingMessage, res: ServerResponse, id: string): Promise<void> {
+  // 404-free: a design with no agent call has no record, and answers {}.
+  sendJson(res, 200, readUsage(id) ?? {});
 }
 
 export async function mtimeRoute(_req: IncomingMessage, res: ServerResponse, id: string): Promise<void> {

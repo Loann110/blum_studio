@@ -4,7 +4,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { toolError, type Content } from "./trust.js";
+import { badDesignId, toolError, type Content } from "./trust.js";
+import { recordUsage } from "../usage.js";
 import { studioVersion } from "../version.js";
 import { designId, designIds, operationsSchema, regionSchema } from "./schemas.js";
 import { createDesignTool, deleteDraftTool, getDesignTool, listDesignsTool, listFormatsTool, apiInfoTool, overviewTool, styleGuideTool } from "./tools/designs.js";
@@ -57,6 +58,18 @@ export function toolResult(out: string | Content[]): { content: Content[]; isErr
   return { content };
 }
 
+/** The design a call is about: its design_id, or the id create_design returned. */
+function usageId(tool: string, args: Record<string, unknown>, out: string | Content[]): string | null {
+  if (typeof args.design_id === "string" && !badDesignId(args.design_id)) return args.design_id;
+  if (tool !== "create_design" || typeof out !== "string") return null;
+  try {
+    const id = (JSON.parse(out) as { id?: unknown }).id;
+    return typeof id === "string" && !badDesignId(id) ? id : null;
+  } catch {
+    return null;
+  }
+}
+
 export function registerTools(): void {
   for (const t of TOOLS) {
     server.registerTool(t.name, { description: t.desc, inputSchema: z.object(t.schema).passthrough() }, async (args: Record<string, unknown>) => {
@@ -66,7 +79,10 @@ export function registerTools(): void {
       if (unknown.length > 0) {
         return toolResult(toolError(`unknown argument ${unknown.map((k) => `'${k}'`).join(", ")} for ${t.name}; allowed: ${allowed.join(", ") || "none"}`));
       }
-      return toolResult(await t.fn(args));
+      const out = await t.fn(args);
+      const id = usageId(t.name, args, out);
+      if (id) await recordUsage(id, args, out);
+      return toolResult(out);
     });
   }
 }
