@@ -4,8 +4,15 @@ import type { Page } from "playwright-core";
 import { resolvePublicAddresses } from "../download.js";
 import { assetsDir, mediaDir } from "../paths.js";
 
+// Windows paths ignore case, and Chromium asks for C:/ where the cwd may say c:/.
+function key(p: string): string {
+  return process.platform === "win32" ? p.toLowerCase() : p;
+}
+
 function inside(file: string, dir: string): boolean {
-  return file === dir || file.startsWith(dir + path.sep);
+  const f = key(file);
+  const d = key(dir);
+  return f === d || f.startsWith(d + path.sep);
 }
 
 function filePath(url: string): string | null {
@@ -46,7 +53,7 @@ export async function guardRenderPage(page: Page, allowedFile?: string): Promise
     }
     if (url.startsWith("file:")) {
       const p = filePath(url);
-      if (p && (inside(p, assets) || inside(p, media) || (extra !== null && p === extra))) {
+      if (p && (inside(p, assets) || inside(p, media) || (extra !== null && key(p) === key(extra)))) {
         await route.continue();
       } else {
         await route.abort();

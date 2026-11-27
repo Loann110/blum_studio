@@ -7,10 +7,11 @@ import os from "node:os";
 import path from "node:path";
 import { downloadImage, isBlockedIp, resolvePublicAddresses, type ResolveFn } from "../download.js";
 import { closeBrowser, getOrLaunchBrowser } from "../export/browser.js";
-import { guardRenderPage } from "../export/guard.js";
+import { guardRenderPage, isAllowedFileUrl } from "../export/guard.js";
 import { fileUrl, renderHtml } from "../export/png.js";
 import { importImageTool } from "../mcp/tools/media.js";
 import { tmpFile } from "../store.js";
+import { assetsDir } from "../paths.js";
 import { tinyPng, useTempDesigns } from "./helpers.js";
 
 useTempDesigns("ssrf");
@@ -142,4 +143,14 @@ test("a design pointing outside the assets makes no file request", async () => {
       // same temp-page rule as the export
     }
   }
+});
+
+test("our own assets load whatever the drive letter case", () => {
+  if (process.platform !== "win32") return;
+  // Chromium asks for C:/ while a cwd from an editor may say c:/: same folder.
+  const font = path.join(path.resolve(assetsDir()), "fonts", "inter.woff2");
+  const flipped = (font[0] === font[0].toUpperCase() ? font[0].toLowerCase() : font[0].toUpperCase()) + font.slice(1);
+  assert.ok(isAllowedFileUrl(fileUrl(font)));
+  assert.ok(isAllowedFileUrl(fileUrl(flipped)));
+  assert.ok(!isAllowedFileUrl(fileUrl(path.join(path.dirname(path.resolve(assetsDir())), "secret.png"))));
 });
