@@ -902,3 +902,46 @@ describe('update patch props', () => {
     );
   });
 });
+
+describe('full-bleed photo corners', () => {
+  const story = (): Json => ({
+    version: 1, name: 'T', format: 'story',
+    background: { kind: 'color', color: '#ffffff' }, items: [],
+  });
+  const photo = (box: Json, props: Json): Json => ({
+    op: 'add',
+    item: {
+      id: 'p', name: 'p', type: 'photo', ...box,
+      props: { src: 'https://example.com/a.jpg', ...props },
+    },
+  });
+  const full = { x: 540, y: 960, width: 1080, height: 1920 };
+  const small = { x: 540, y: 960, width: 600, height: 600 };
+  const radiusOf = (d: Json): unknown => ((d.items as Json[])[0].props as Json).cornerRadius;
+
+  it('a full-page photo without cornerRadius gets square corners', () => {
+    const out = applyOps(story(), [photo(full, {})]) as Json;
+    assert.equal(radiusOf(out), 0);
+  });
+
+  it('an explicit cornerRadius is always kept', () => {
+    const out = applyOps(story(), [photo(full, { cornerRadius: 30 })]) as Json;
+    assert.equal(radiusOf(out), 30);
+  });
+
+  it('a small photo without cornerRadius keeps the default', () => {
+    const out = applyOps(story(), [photo(small, {})]) as Json;
+    assert.equal(radiusOf(out), 48);
+  });
+
+  it('a saved design read back keeps its radius', () => {
+    const saved: Json = {
+      ...story(),
+      items: [{
+        id: 'p', name: 'p', type: 'photo', ...full,
+        props: { src: 'https://example.com/a.jpg', cornerRadius: 48 },
+      }],
+    };
+    assert.equal(radiusOf(applyOps(saved, []) as Json), 48);
+  });
+});

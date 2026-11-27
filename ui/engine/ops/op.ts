@@ -47,11 +47,17 @@ export interface Op {
   hasBackground: boolean;
   layout: LayoutSpec;
   hasLayout: boolean;
+  hasCornerRadius: boolean;
 }
 
 export function parseOp(d: Json): Op {
   let item: Item | undefined;
-  if (has(d, 'item')) item = parseItem(d['item'] as Json);
+  let hasCornerRadius = false;
+  if (has(d, 'item')) {
+    const raw = d['item'] as Json;
+    item = parseItem(raw);
+    if (isObj(raw['props'])) hasCornerRadius = has(raw['props'] as Json, 'cornerRadius');
+  }
   const patch: FieldPatch = {
     strings: new Map(),
     numbers: new Map(),
@@ -125,6 +131,7 @@ export function parseOp(d: Json): Op {
     hasBackground: has(d, 'background'),
     layout,
     hasLayout,
+    hasCornerRadius,
   };
 }
 

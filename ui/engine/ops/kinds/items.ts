@@ -1,10 +1,20 @@
 // Engine item ops: add, update, remove, duplicate, lock.
-import type { Design } from '../../model.js';
+import type { Design, Item, PhotoProps } from '../../model.js';
 import type { Op } from '../op.js';
+import { canvasHeight, canvasWidth } from '../../model.js';
 import { fail } from '../../errors.js';
 import { checkItem } from '../../validate.js';
 import { applyPatch } from '../fields/index.js';
 import { cloneItem, collectTaken, findIn, findItem, freshenSubtree, freshId } from '../lookup.js';
+
+// A full-bleed photo with rounded corners shows the page behind in the corners.
+function coversPage(doc: Design, it: Item): boolean {
+  const left = it.x - it.width / 2;
+  const top = it.y - it.height / 2;
+  return left <= 1 && top <= 1 &&
+    left + it.width >= canvasWidth(doc) - 1 &&
+    top + it.height >= canvasHeight(doc) - 1;
+}
 
 export function applyAdd(doc: Design, op: Op): void {
       if (!op.item) fail('add needs an item');
@@ -13,6 +23,9 @@ export function applyAdd(doc: Design, op: Op): void {
       const errs: string[] = [];
       checkItem(op.item, 'item', errs);
       if (errs.length > 0) fail(errs[0]);
+      if (op.item.type === 'photo' && !op.hasCornerRadius && coversPage(doc, op.item)) {
+        (op.item.props as PhotoProps).cornerRadius = 0;
+      }
       doc.items.push(cloneItem(op.item));
 }
 
