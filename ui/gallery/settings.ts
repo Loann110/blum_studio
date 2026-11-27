@@ -193,4 +193,72 @@ async function readDetail(res: Response): Promise<string> {
   return `the server answered HTTP ${res.status}`;
 }
 
+/* ---- stock photos ---- */
+
+const STOCK_SERVICES = ['pexels', 'pixabay'] as const;
+
+function stockStateEl(service: string): HTMLElement | null {
+  return document.querySelector(`.stock-card[data-service="${service}"] .stock-state`);
+}
+
+function setStockState(service: string, text: string): void {
+  const state = stockStateEl(service);
+  if (!state) return;
+  state.textContent = text;
+  state.classList.toggle('on', text === 'Connected');
+}
+
+async function loadStock(): Promise<void> {
+  let status: { pexels: boolean; pixabay: boolean };
+  try {
+    const res = await fetch('/api/stock');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    status = (await res.json()) as { pexels: boolean; pixabay: boolean };
+  } catch {
+    return; // a saved key still works; the fields stay editable
+  }
+  for (const service of STOCK_SERVICES) {
+    setStockState(service, status[service] ? 'Connected' : 'Not set');
+  }
+}
+
+async function runStock(service: string, key: string, button: HTMLButtonElement): Promise<void> {
+  button.disabled = true;
+  let status = 'the server did not answer';
+  try {
+    const res = await fetch('/api/stock', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'X-Blum-Request': '1' },
+      body: JSON.stringify({ service, key }),
+    });
+    if (!res.ok) {
+      status = await readDetail(res);
+    } else {
+      const body = (await res.json()) as { status?: string };
+      const s = body.status ?? '';
+      status = s === 'connected' ? 'Connected' : s === 'invalid key' ? 'Invalid key' : s === 'not set' ? 'Not set' : s || 'Saved';
+    }
+  } catch {
+    /* status already set above */
+  }
+  button.disabled = false;
+  setStockState(service, status);
+}
+
+for (const card of Array.from(document.querySelectorAll<HTMLElement>('.stock-card'))) {
+  const service = card.dataset.service;
+  if (service !== 'pexels' && service !== 'pixabay') continue;
+  const input = card.querySelector<HTMLInputElement>('.stock-key');
+  const save = card.querySelector<HTMLButtonElement>('.stock-save');
+  const remove = card.querySelector<HTMLButtonElement>('.stock-remove');
+  if (!input || !save || !remove) continue;
+  save.addEventListener('click', () => void runStock(service, input.value, save));
+  remove.addEventListener('click', () => {
+    input.value = '';
+    void runStock(service, '', remove);
+  });
+}
+
+void loadStock();
+
 void load();

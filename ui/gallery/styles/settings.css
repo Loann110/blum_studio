@@ -81,6 +81,78 @@
   text-decoration: none;
 }
 
+/* ---- stock photos ---- */
+.stock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 26px 0 6px;
+  max-width: 760px;
+}
+
+.stock h2 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.stock-note {
+  font-size: 13px;
+  color: var(--muted);
+  margin: -4px 0 0;
+}
+
+.stock-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+  flex-wrap: wrap;
+}
+
+.stock-info {
+  flex: 1;
+  min-width: 160px;
+}
+
+.stock-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.stock-state {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.stock-state.on {
+  color: var(--brand-deep);
+  font-weight: 600;
+}
+
+.stock-action {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stock-key {
+  border: var(--edge);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  padding: 6px 10px;
+  width: 240px;
+  max-width: 60vw;
+}
+
 @media (max-width: 760px) {
   .agent {
     flex-wrap: wrap;

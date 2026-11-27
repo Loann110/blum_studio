@@ -100,14 +100,14 @@ test("bad new values fail", async () => {
 });
 
 test("resources list the new assets", async () => {
-  assert.ok((JSON.parse(listResourcesTool("fonts", "Oswald")) as string[]).includes("Oswald"));
-  assert.ok((JSON.parse(listResourcesTool("fonts", "Barlow Condensed")) as string[]).includes("Barlow Condensed"));
-  const masks = JSON.parse(listResourcesTool("masks")) as string[];
+  assert.ok((JSON.parse(await listResourcesTool("fonts", "Oswald")) as string[]).includes("Oswald"));
+  assert.ok((JSON.parse(await listResourcesTool("fonts", "Barlow Condensed")) as string[]).includes("Barlow Condensed"));
+  const masks = JSON.parse(await listResourcesTool("masks")) as string[];
   assert.ok(masks.includes("star") && masks.includes("blob") && masks.includes("heart"));
-  const curved = JSON.parse(listResourcesTool("stickers", "curved")) as Array<{ id: string }>;
+  const curved = JSON.parse(await listResourcesTool("stickers", "curved")) as Array<{ id: string }>;
   assert.ok(curved.some((e) => e.id.includes("blum-doodles/")), "curved search finds doodles");
-  const en = JSON.parse(listResourcesTool("stickers", "arrow")) as Array<{ id: string }>;
+  const en = JSON.parse(await listResourcesTool("stickers", "arrow")) as Array<{ id: string }>;
   assert.ok(en.some((e) => e.id.includes("blum-doodles/")), "english search finds doodles");
-  const phone = JSON.parse(listResourcesTool("stickers", "phone")) as Array<{ id: string }>;
+  const phone = JSON.parse(await listResourcesTool("stickers", "phone")) as Array<{ id: string }>;
   assert.ok(phone.some((e) => e.id.includes("phone-doodle")), "phone doodle is searchable");
 });

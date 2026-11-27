@@ -380,12 +380,17 @@ export function designMtimeMs(id: string): number {
   return fs.statSync(designPath(id)).mtimeMs / 1000;
 }
 
-export function importImage(id: string, data: Buffer, filename: string): Promise<{ src: string; path: string }> {
-  // Concurrent imports race for the media name: serialize them like design writes.
-  return withDesignLock(id, () => storeImage(id, data, filename));
+export interface MediaCredit {
+  photographer: string;
+  page: string;
 }
 
-async function storeImage(id: string, data: Buffer, filename: string): Promise<{ src: string; path: string }> {
+export function importImage(id: string, data: Buffer, filename: string, credit?: MediaCredit): Promise<{ src: string; path: string }> {
+  // Concurrent imports race for the media name: serialize them like design writes.
+  return withDesignLock(id, () => storeImage(id, data, filename, credit));
+}
+
+async function storeImage(id: string, data: Buffer, filename: string, credit?: MediaCredit): Promise<{ src: string; path: string }> {
   if (!fs.existsSync(designPath(id))) throw new UnknownDesign(`unknown design '${id}'`);
   const ext = sniffImage(data);
   if (!ext) throw new Error("not a PNG, JPEG, WebP, GIF or SVG image");
@@ -410,6 +415,21 @@ async function storeImage(id: string, data: Buffer, filename: string): Promise<{
       // same namespaced-temp rule as designs
     }
     throw e;
+  }
+  // Stock photos keep their credit next to the media file so it can be shown.
+  if (credit) {
+    const creditTmp = path.join(mediaDir(), `.tmp-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    try {
+      await fs.promises.writeFile(creditTmp, JSON.stringify(credit, null, 2), "utf-8");
+      await replaceAtomically(creditTmp, `${target}.credit.json`);
+    } catch (e) {
+      try {
+        await fs.promises.unlink(creditTmp);
+      } catch {
+        // same namespaced-temp rule as designs
+      }
+      throw e;
+    }
   }
   return { src: `media/${path.basename(target)}`, path: target };
 }

@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import { removeBackground } from "../../export/cutout.js";
 import { designPath, downloadImage, importImage, UnknownDesign } from "../../store.js";
+import { downloadStockImage, isStockRef, resolveStockPhoto, type ResolvedStock } from "../../stock.js";
 import { badDesignId, refuseTemplate, toolError } from "../trust.js";
 
 export async function importImageTool(
@@ -15,7 +16,7 @@ export async function importImageTool(
   const refused = refuseTemplate(id);
   if (refused) return refused;
   if (typeof source !== "string" || !source.trim()) {
-    return toolError("source must be an http(s) URL or a local file path (use list_resources('photos') for URLs)");
+    return toolError("source must be a stock id (pexels:<id> / pixabay:<id>), an http(s) URL or a local file path");
   }
   if (typeof filename !== "string" || !filename.trim()) {
     return toolError("filename must be text (the media name, e.g. 'hero')");
@@ -25,7 +26,22 @@ export async function importImageTool(
   }
   let data: Buffer;
   let name: string;
-  if (source.startsWith("http://") || source.startsWith("https://")) {
+  let credit: { photographer: string; page: string } | undefined;
+  if (isStockRef(source)) {
+    let photo: ResolvedStock;
+    try {
+      photo = await resolveStockPhoto(source);
+    } catch (e) {
+      return toolError(`could not resolve '${source}': ${(e as Error).message}`);
+    }
+    try {
+      data = await downloadStockImage(photo.url);
+    } catch (e) {
+      return toolError(`could not download '${source}': ${(e as Error).message}`);
+    }
+    name = filename;
+    credit = { photographer: photo.photographer, page: photo.page };
+  } else if (source.startsWith("http://") || source.startsWith("https://")) {
     try {
       data = await downloadImage(source);
     } catch (e) {
@@ -52,7 +68,7 @@ export async function importImageTool(
     name = `${name}-cutout`;
   }
   try {
-    return JSON.stringify(await importImage(id as string, data, name));
+    return JSON.stringify(await importImage(id as string, data, name, credit));
   } catch (e) {
     if (e instanceof UnknownDesign) return toolError(`unknown design '${id}' (use list_designs to see ids)`);
     if ((e as NodeJS.ErrnoException).code) return toolError(`could not store the image: ${(e as Error).message}`);

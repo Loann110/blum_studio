@@ -149,7 +149,8 @@ tool.
 | `resources.ts` | Fonts, stickers, photos and masks, for both APIs. |
 | `lint.ts` | The engine's design check, with text overflow measured on the real fonts. |
 | `sessions.ts` | Create-page sessions, stored in `designs/.sessions/`. |
-| `routes/` | HTTP endpoints: designs, ops, media, export, resources, agents, and `console/` for agent runs. |
+| `stock.ts` | Stock photo keys (Pexels/Pixabay, in `designs/.settings/`), search and stock-id resolution. |
+| `routes/` | HTTP endpoints: designs, ops, media, export, resources, agents, stock, and `console/` for agent runs. |
 | `mcp/main.ts` | The MCP server and its tool table. |
 | `mcp/trust.ts` | Argument checks shared by every tool: ids, paths, sticker refs. |
 | `mcp/tools/` | Tool implementations, one file per group (`vector.ts` is the `draw_svg` workshop). |

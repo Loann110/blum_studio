@@ -8,6 +8,11 @@ import { getOrLaunchBrowser } from "../export/browser.js";
 export function useTempDesigns(tag: string): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `blum-${tag}-`));
   process.env.BLUM_DESIGNS = dir;
+  // Stock keys are user state: every suite starts with none, whatever the shell exports.
+  delete process.env.PEXELS_API_KEY;
+  delete process.env.PIXABAY_API_KEY;
+  delete process.env.PEXELS_API_BASE;
+  delete process.env.PIXABAY_API_BASE;
   return dir;
 }
 

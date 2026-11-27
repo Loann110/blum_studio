@@ -11,6 +11,7 @@ import { mediaRoute, uploadRoute } from "./routes/media.js";
 import { checkRoute, opsRoute, redoRoute, syncRoute, undoRoute } from "./routes/ops.js";
 import { resourcesRoute } from "./routes/resources.js";
 import { agentConnectRoute, agentDisconnectRoute, agentsRoute } from "./routes/agents.js";
+import { stockRoute, stockSaveRoute } from "./routes/stock.js";
 import { cachedAgents } from "./agents/index.js";
 import {
   consoleAgentsRoute,
@@ -91,6 +92,8 @@ const API: Array<{ method: string; match: RegExp; run: (req: IncomingMessage, re
   { method: "POST", match: /^\/api\/designs\/([^/]+)\/duplicate$/, run: async (q, s, m) => duplicateRoute(q, s, decodeURIComponent(m[1])) },
   { method: "GET", match: /^\/api\/media\/([^/]+)$/, run: (q, s, m) => mediaRoute(q, s, decodeURIComponent(m[1])) },
   { method: "GET", match: /^\/api\/agents$/, run: (q, s) => agentsRoute(q, s) },
+  { method: "GET", match: /^\/api\/stock$/, run: (q, s) => stockRoute(q, s) },
+  { method: "POST", match: /^\/api\/stock$/, run: async (q, s) => stockSaveRoute(q, s) },
   { method: "POST", match: /^\/api\/agents\/([^/]+)\/connect$/, run: (q, s, m) => agentConnectRoute(q, s, decodeURIComponent(m[1])) },
   { method: "POST", match: /^\/api\/agents\/([^/]+)\/disconnect$/, run: (q, s, m) => agentDisconnectRoute(q, s, decodeURIComponent(m[1])) },
   { method: "GET", match: /^\/api\/console\/agents$/, run: (q, s) => consoleAgentsRoute(q, s) },

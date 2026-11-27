@@ -45,6 +45,32 @@
       <p class="status" id="status" role="status" aria-live="polite"></p>
       <section class="agents" id="agents" aria-label="AI agents" tabindex="-1">
       </section>
+      <section class="stock" id="stock" aria-label="Stock photos">
+        <h2>Stock photos</h2>
+        <p class="stock-note">Pexels and Pixabay photos are free to use without attribution; attribution is appreciated. Paste an API key to let agents search that service.</p>
+        <div class="stock-card" data-service="pexels">
+          <div class="stock-info">
+            <div class="stock-name">Pexels</div>
+            <div class="stock-state">Not set</div>
+          </div>
+          <div class="stock-action">
+            <input class="stock-key" type="password" placeholder="Pexels API key" autocomplete="off" />
+            <button class="primary stock-save" type="button">Save</button>
+            <button class="ghost stock-remove" type="button">Remove</button>
+          </div>
+        </div>
+        <div class="stock-card" data-service="pixabay">
+          <div class="stock-info">
+            <div class="stock-name">Pixabay</div>
+            <div class="stock-state">Not set</div>
+          </div>
+          <div class="stock-action">
+            <input class="stock-key" type="password" placeholder="Pixabay API key" autocomplete="off" />
+            <button class="primary stock-save" type="button">Save</button>
+            <button class="ghost stock-remove" type="button">Remove</button>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
   <script type="module" src="/js/gallery/settings.js"></script>

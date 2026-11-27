@@ -41,33 +41,33 @@ test("polish score matches check", async () => {
   assert.ok(err(await polishScoreTool("no-such-id")).includes("unknown design"));
 });
 
-test("resources kinds and bad kind", () => {
+test("resources kinds and bad kind", async () => {
   for (const kind of ["fonts", "stickers", "photos", "masks", "categories"]) {
-    assert.ok(Array.isArray(JSON.parse(listResourcesTool(kind))), kind);
+    assert.ok(Array.isArray(JSON.parse(await listResourcesTool(kind))), kind);
   }
-  assert.ok((JSON.parse(listResourcesTool("fonts")) as string[]).includes("Fraunces"));
-  assert.ok((JSON.parse(listResourcesTool("stickers")) as Array<{ id: string }>).some((r) => r.id === "blum/pineapple.svg"));
-  assert.ok((JSON.parse(listResourcesTool("masks")) as string[]).includes("rect"));
-  assert.ok(err(listResourcesTool("sounds")).includes("fonts|"));
-  assert.ok(err(listResourcesTool("palettes")).includes("fonts|"));
-  assert.ok(err(listResourcesTool("fonts", 123)).includes("must be text"));
+  assert.ok((JSON.parse(await listResourcesTool("fonts")) as string[]).includes("Fraunces"));
+  assert.ok((JSON.parse(await listResourcesTool("stickers")) as Array<{ id: string }>).some((r) => r.id === "blum/pineapple.svg"));
+  assert.ok((JSON.parse(await listResourcesTool("masks")) as string[]).includes("rect"));
+  assert.ok(err(await listResourcesTool("sounds")).includes("fonts|"));
+  assert.ok(err(await listResourcesTool("palettes")).includes("fonts|"));
+  assert.ok(err(await listResourcesTool("fonts", 123)).includes("must be text"));
   // The catalogue stays small for an agent's context, the full row on demand.
-  const all = listResourcesTool("photos");
+  const all = await listResourcesTool("photos");
   assert.ok(all.length < 30_000, `${all.length} bytes`);
   const first = (JSON.parse(all) as Array<{ id: string; url: string; palette: string[] }>)[0];
   assert.ok(first.url.startsWith("https://") && first.palette.every((h) => h.startsWith("#")));
-  assert.ok(Array.isArray((JSON.parse(listResourcesTool("photos", first.id)) as Array<{ colors: unknown }>)[0].colors));
+  assert.ok(Array.isArray((JSON.parse(await listResourcesTool("photos", first.id)) as Array<{ colors: unknown }>)[0].colors));
   // Accents and case never hide a photo: "Café" finds what "cafe" finds.
-  const cafe = JSON.parse(listResourcesTool("photos", "cafe")) as unknown[];
+  const cafe = JSON.parse(await listResourcesTool("photos", "cafe")) as unknown[];
   assert.ok(cafe.length > 0);
-  assert.equal((JSON.parse(listResourcesTool("photos", "Café")) as unknown[]).length, cafe.length);
+  assert.equal((JSON.parse(await listResourcesTool("photos", "Café")) as unknown[]).length, cafe.length);
 });
 
-test("photo search matches every word", () => {
+test("photo search matches every word", async () => {
   // Agents type keywords, not descriptions, so each word matches on its own.
-  const found = JSON.parse(listResourcesTool("photos", "teal sunglasses")) as Array<{ id: string }>;
+  const found = JSON.parse(await listResourcesTool("photos", "teal sunglasses")) as Array<{ id: string }>;
   assert.ok(found.some((r) => r.id === "teal-bag-glasses"), JSON.stringify(found));
-  assert.equal((JSON.parse(listResourcesTool("photos", "teal zzznophoto")) as unknown[]).length, 0);
+  assert.equal((JSON.parse(await listResourcesTool("photos", "teal zzznophoto")) as unknown[]).length, 0);
 });
 
 test("text overflow uses the real font and the wrap", async () => {

@@ -113,8 +113,9 @@ const DOCS: Record<string, string> = {
   resources:
     "list_resources(kind, query?): fonts (family names for text.font), " +
     "stickers (ids like blum/pineapple.svg), " +
-    "photos (Unsplash URLs with themes), masks (rect|circle|arch|star|blob|heart). " +
-    "import_image stores a local file or URL into designs/media/; remove_background=true cuts the subject out (transparent PNG: use it in a photo with fit contain, or as a sticker-like cut-out).",
+    "photos (Unsplash catalogue; pexels:<id>/pixabay:<id> stock rows when a key is set in Settings), " +
+    "masks (rect|circle|arch|star|blob|heart). " +
+    "import_image stores a local file, URL or stock id (pexels:<id>/pixabay:<id>) into designs/media/; remove_background=true cuts the subject out (transparent PNG: use it in a photo with fit contain, or as a sticker-like cut-out).",
   export:
     "preview returns an image to look at (400 px wide, width 64..1080); " +
     "region=[x,y,w,h] crops a zoomed box first. " +

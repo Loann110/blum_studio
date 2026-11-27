@@ -22,7 +22,7 @@ test("friendly errors surface as one JSON shape", async () => {
   assert.ok(opsErr.includes("non-empty list"));
   const idErr = (JSON.parse(await applyOpsTool("../../x", [{ op: "remove", id: "x" }])) as { error: string }).error;
   assert.ok(idErr.includes("use the id from create_design"));
-  const kindErr = (JSON.parse(listResourcesTool("emoji")) as { error: string }).error;
+  const kindErr = (JSON.parse(await listResourcesTool("emoji")) as { error: string }).error;
   assert.ok(kindErr.includes("unknown kind"));
   const previewErr = JSON.parse(await previewTool("no-such-id") as string) as { ok: boolean };
   assert.equal(previewErr.ok, false);
