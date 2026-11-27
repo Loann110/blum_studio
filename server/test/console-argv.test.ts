@@ -74,7 +74,7 @@ test("a result event keeps the real usage numbers it reports", () => {
     duration_ms: 72_100,
     num_turns: 7,
   }));
-  assert.deepEqual(full?.usage, { tokens: 42_000, costUsd: 0.0342, ms: 72_100, turns: 7 });
+  assert.deepEqual(full?.usage, { tokens: 42_000, cached: 40_000, costUsd: 0.0342, ms: 72_100, turns: 7 });
   // Absent fields stay absent, a reported zero is kept.
   const partial = parseStreamLine(`{"type":"result","result":"Done","usage":{"input_tokens":5},"duration_ms":0}`);
   assert.deepEqual(partial?.usage, { tokens: 5, ms: 0 });

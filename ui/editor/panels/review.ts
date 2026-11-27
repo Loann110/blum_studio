@@ -34,14 +34,30 @@ function friendly(f: PanelFinding): string {
 }
 
 function shortTokens(n: number): string {
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
   return n >= 1000 ? `${Math.round(n / 1000)}k` : String(n);
 }
 
-/** One quiet sentence: calls, elapsed time, tokens and the estimated dollars. */
-function usageLine(u: AgentUsage): string {
-  const seconds = Math.max(0, Math.round(u.last - u.first));
-  const time = seconds < 60 ? `${seconds} s` : `${Math.floor(seconds / 60)} min ${seconds % 60} s`;
-  return `${u.calls} call${u.calls === 1 ? '' : 's'} · ${time} · ${shortTokens(u.input)} in · ${shortTokens(u.out)} out · ~$${u.usd.toFixed(2)} (estimate)`;
+function shortTime(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds));
+  return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${s % 60} s`;
+}
+
+/** Measured figures when the console made the design, else a labelled estimate. */
+function usageLine(u: Partial<AgentUsage>): string {
+  const m = u.measured;
+  if (m) {
+    const shared = m.designs > 1 ? ` · whole session, ${m.designs} designs` : '';
+    // Runs recorded before the cache split carry no cached count: say nothing then.
+    const cached = m.cached ? ` (${shortTokens(m.cached)} cached)` : '';
+    return `Claude Code: ${shortTokens(m.tokens)} tokens${cached} · ` +
+      `$${m.costUsd.toFixed(2)} · ${shortTime(m.ms / 1000)} · measured${shared}`;
+  }
+  const cal = u.calibration ?? { factor: 1, samples: 0 };
+  const basis = cal.samples ? `calibrated on ${cal.samples} measured run${cal.samples === 1 ? '' : 's'}` : 'uncalibrated';
+  const calls = u.calls ?? 0;
+  return `Agent: ${calls} call${calls === 1 ? '' : 's'} · ${shortTime(u.active ?? 0)} active · ` +
+    `~$${((u.usd ?? 0) * cal.factor).toFixed(2)} (estimate, ${basis})`;
 }
 
 export async function renderReview(root: HTMLElement, st: EditorState): Promise<void> {
@@ -119,7 +135,7 @@ export async function renderReview(root: HTMLElement, st: EditorState): Promise<
   await refresh();
   try {
     const usage = await getUsage(st.id);
-    if (usage.calls) agent.textContent = `Agent: ${usageLine(usage as AgentUsage)}`;
+    if (usage.calls || usage.measured) agent.textContent = usageLine(usage);
   } catch {
     // the estimate is optional; the score still shows
   }

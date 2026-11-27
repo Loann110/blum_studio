@@ -2,6 +2,7 @@
 // tool. Autoscrolls only when the user already sits at the bottom.
 export interface TranscriptUsage {
   tokens?: number;
+  cached?: number;
   costUsd?: number;
   ms?: number;
   turns?: number;
@@ -49,15 +50,24 @@ function duration(ms: number): string {
 }
 
 // "42.1k tokens · $0.03 · 1m 12s", only the numbers the run reported.
+function count(n: number): string {
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
+  return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+}
+
+// "269.1k tokens (251.0k cached) · $0.29 · 44s · 11 turns": cache reads are
+// most of the count but cost a tenth, so they are shown apart.
 function usageLabel(usage: TranscriptUsage): string {
   const parts: string[] = [];
   if (usage.tokens !== undefined) {
-    parts.push(usage.tokens >= 1000 ? `${(usage.tokens / 1000).toFixed(1)}k tokens` : `${usage.tokens} tokens`);
+    const cached = usage.cached ? ` (${count(usage.cached)} cached)` : '';
+    parts.push(`${count(usage.tokens)} tokens${cached}`);
   }
   if (usage.costUsd !== undefined) {
     parts.push(`$${usage.costUsd.toFixed(usage.costUsd > 0 && usage.costUsd < 0.01 ? 3 : 2)}`);
   }
   if (usage.ms !== undefined) parts.push(duration(usage.ms));
+  if (usage.turns !== undefined) parts.push(`${usage.turns} turn${usage.turns === 1 ? '' : 's'}`);
   return parts.join(' · ');
 }
 
@@ -67,7 +77,7 @@ const totals = new WeakMap<HTMLElement, { runs: number; usage: TranscriptUsage }
 function addUsage(box: HTMLElement, usage: TranscriptUsage): { runs: number; usage: TranscriptUsage } {
   const total = totals.get(box) ?? { runs: 0, usage: {} };
   total.runs += 1;
-  for (const key of ['tokens', 'costUsd', 'ms', 'turns'] as const) {
+  for (const key of ['tokens', 'cached', 'costUsd', 'ms', 'turns'] as const) {
     if (usage[key] !== undefined) total.usage[key] = (total.usage[key] ?? 0) + (usage[key] as number);
   }
   totals.set(box, total);

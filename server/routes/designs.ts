@@ -2,7 +2,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { fail, needDesign, readJson, sendJson } from "../http.js";
 import { historyFor, forget as forgetHistory } from "../histories.js";
-import { forgetUsage, readUsage } from "../usage.js";
+import { calibration, forgetUsage, measuredUsage, readUsage } from "../usage.js";
 import {
   InvalidDesign,
   UnknownDesign,
@@ -85,7 +85,13 @@ export async function stateRoute(_req: IncomingMessage, res: ServerResponse, id:
 
 export async function usageRoute(_req: IncomingMessage, res: ServerResponse, id: string): Promise<void> {
   // 404-free: a design with no agent call has no record, and answers {}.
-  sendJson(res, 200, readUsage(id) ?? {});
+  const record = readUsage(id);
+  const measured = measuredUsage(id);
+  if (!record && !measured) {
+    sendJson(res, 200, {});
+    return;
+  }
+  sendJson(res, 200, { ...(record ?? {}), measured, calibration: calibration() });
 }
 
 export async function mtimeRoute(_req: IncomingMessage, res: ServerResponse, id: string): Promise<void> {

@@ -137,9 +137,14 @@ export interface AgentUsage {
   back: number;
   input: number;
   usd: number;
+  active: number;
+  /** Real Claude Code figures when the Create console made this design. */
+  measured: { tokens: number; cached: number; costUsd: number; ms: number; runs: number; designs: number } | null;
+  /** Real over estimated cost on measured designs; corrects the estimate. */
+  calibration: { factor: number; samples: number };
 }
 
-/** The agent's estimated usage; {} when no MCP call touched this design. */
+/** The agent's usage, measured or estimated; {} when no agent touched this design. */
 export async function getUsage(id: string): Promise<Partial<AgentUsage>> {
   return (await (
     await call(`/api/designs/${encodeURIComponent(id)}/usage`)

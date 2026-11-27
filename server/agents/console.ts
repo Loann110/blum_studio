@@ -97,6 +97,7 @@ export function claudeLaunch(prompt: string, resumeId?: string, sessionId?: stri
 // run cost in tokens and time. Absent fields stay absent.
 export interface ConsoleUsage {
   tokens?: number;
+  cached?: number; // of tokens, read from the prompt cache (about 10x cheaper)
   costUsd?: number;
   ms?: number;
   turns?: number;
@@ -120,6 +121,8 @@ function usageOf(parsed: Record<string, unknown>): ConsoleUsage | undefined {
   const usage: ConsoleUsage = {};
   const counts = TOKEN_KEYS.map((key) => num(raw[key])).filter((n): n is number => n !== undefined);
   if (counts.length) usage.tokens = counts.reduce((sum, n) => sum + n, 0);
+  const cached = num(raw.cache_read_input_tokens);
+  if (cached !== undefined) usage.cached = cached;
   const costUsd = num(parsed.total_cost_usd);
   if (costUsd !== undefined) usage.costUsd = costUsd;
   const ms = num(parsed.duration_ms);
