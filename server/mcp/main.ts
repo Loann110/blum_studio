@@ -4,7 +4,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import type { Content } from "./trust.js";
+import { toolError, type Content } from "./trust.js";
 import { studioVersion } from "../version.js";
 import { designId, designIds, operationsSchema, regionSchema } from "./schemas.js";
 import { createDesignTool, deleteDraftTool, getDesignTool, listDesignsTool, listFormatsTool, apiInfoTool, overviewTool, styleGuideTool } from "./tools/designs.js";
@@ -18,7 +18,7 @@ import { exportPdfTool, exportPngTool } from "./tools/export.js";
 
 /* ---- registration ---- */
 
-const server = new McpServer({ name: "blum-studio", version: studioVersion() });
+export const server = new McpServer({ name: "blum-studio", version: studioVersion() });
 
 const TOOLS: Array<{ name: string; desc: string; schema: Record<string, z.ZodTypeAny>; fn: (a: Record<string, unknown>) => Promise<string | Content[]> | string }> = [
   { name: "overview", desc: "Read first: what this server does and the design rules to follow.", schema: {}, fn: () => overviewTool() },
@@ -59,7 +59,13 @@ export function toolResult(out: string | Content[]): { content: Content[]; isErr
 
 export function registerTools(): void {
   for (const t of TOOLS) {
-    server.registerTool(t.name, { description: t.desc, inputSchema: t.schema }, async (args: Record<string, unknown>) => {
+    server.registerTool(t.name, { description: t.desc, inputSchema: z.object(t.schema).passthrough() }, async (args: Record<string, unknown>) => {
+      // Passthrough keeps misspelled arguments visible, so they fail here instead of silently using defaults.
+      const allowed = Object.keys(t.schema);
+      const unknown = Object.keys(args).filter((k) => !allowed.includes(k));
+      if (unknown.length > 0) {
+        return toolResult(toolError(`unknown argument ${unknown.map((k) => `'${k}'`).join(", ")} for ${t.name}; allowed: ${allowed.join(", ") || "none"}`));
+      }
       return toolResult(await t.fn(args));
     });
   }
