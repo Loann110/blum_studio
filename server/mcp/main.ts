@@ -43,11 +43,25 @@ const TOOLS: Array<{ name: string; desc: string; schema: Record<string, z.ZodTyp
   { name: "export_pdf", desc: "Export the design as PDF at its exact page size (vector text).", schema: { design_id: designId, out_path: z.string().optional() }, fn: (a) => exportPdfTool(a.design_id, a.out_path) },
 ];
 
+// Clients trust isError, so the tools' own failure texts must set it too.
+export function toolResult(out: string | Content[]): { content: Content[]; isError?: boolean } {
+  const content = typeof out === "string" ? [{ type: "text" as const, text: out }] : out;
+  if (typeof out !== "string") return { content };
+  if (out.startsWith("error:") || out.startsWith("Unknown topic")) return { content, isError: true };
+  if (out.startsWith("{")) {
+    try {
+      if ((JSON.parse(out) as { ok?: unknown }).ok === false) return { content, isError: true };
+    } catch {
+      // plain text that starts with "{": still a success reply
+    }
+  }
+  return { content };
+}
+
 export function registerTools(): void {
   for (const t of TOOLS) {
     server.registerTool(t.name, { description: t.desc, inputSchema: t.schema }, async (args: Record<string, unknown>) => {
-      const out = await t.fn(args);
-      return { content: typeof out === "string" ? [{ type: "text" as const, text: out }] : out };
+      return toolResult(await t.fn(args));
     });
   }
 }

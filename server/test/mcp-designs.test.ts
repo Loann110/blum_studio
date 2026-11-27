@@ -2,8 +2,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { ITEM_EXAMPLES } from "../mcp/item-examples.js";
+import { toolResult } from "../mcp/main.js";
 import { apiInfoTool, createDesignTool, deleteDraftTool, getDesignTool, listDesignsTool, listFormatsTool, overviewTool, styleGuideTool } from "../mcp/tools/designs.js";
 import { applyOpsTool } from "../mcp/tools/ops.js";
+import { previewTool } from "../mcp/tools/preview.js";
 import { blankDesign, saveDesign } from "../store.js";
 import { useTempDesigns } from "./helpers.js";
 
@@ -112,6 +114,19 @@ test("get compact and full", async () => {
   assert.equal(full.items[0].props.text, "Hello");
   assert.ok(err(await getDesignTool("no-such-id")).includes("unknown design"));
   assert.ok(err(await getDesignTool("../evil")).includes("bad design id"));
+});
+
+test("tool failures flag isError, successes do not", async () => {
+  const made = make("Flagged");
+  const failed = toolResult(await getDesignTool("no-such-id"));
+  assert.equal(failed.isError, true);
+  assert.deepEqual(failed.content, [{ type: "text", text: await getDesignTool("no-such-id") }]);
+  assert.equal(toolResult(apiInfoTool("nope")).isError, true);
+  assert.equal(toolResult(styleGuideTool("nope")).isError, true);
+  assert.equal(toolResult(await previewTool("no-such-id")).isError, true);
+  const good = toolResult(await getDesignTool(made.id));
+  assert.equal(good.isError, undefined);
+  assert.equal(good.content.length, 1);
 });
 
 test("samples are hidden from list and never deleted", async () => {
