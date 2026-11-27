@@ -63,6 +63,13 @@ test("resources kinds and bad kind", () => {
   assert.equal((JSON.parse(listResourcesTool("photos", "Café")) as unknown[]).length, cafe.length);
 });
 
+test("photo search matches every word", () => {
+  // Agents type keywords, not descriptions, so each word matches on its own.
+  const found = JSON.parse(listResourcesTool("photos", "teal sunglasses")) as Array<{ id: string }>;
+  assert.ok(found.some((r) => r.id === "teal-bag-glasses"), JSON.stringify(found));
+  assert.equal((JSON.parse(listResourcesTool("photos", "teal zzznophoto")) as unknown[]).length, 0);
+});
+
 test("text overflow uses the real font and the wrap", async () => {
   const made = JSON.parse(createDesignTool("Wrap", "story")) as { id: string };
   const title = (id: string, height: number) => ({
