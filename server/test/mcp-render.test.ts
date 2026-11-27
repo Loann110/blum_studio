@@ -99,8 +99,11 @@ test("export to a taken out_path keeps it and writes -2", async () => {
   const out = `${dir}${path.sep}sub${path.sep}..${path.sep}poster.png`;
   const sentinel = Buffer.from("SENTINEL-ORIGINAL");
   fs.writeFileSync(out, sentinel);
-  const got = JSON.parse(await exportPngTool(made.id, out)) as { path: string };
+  const got = JSON.parse(await exportPngTool(made.id, out)) as { path: string; note?: string };
   assert.equal(got.path, path.join(real, "poster-2.png"));
+  assert.match(got.note ?? "", /poster\.png already existed and was kept; wrote poster-2\.png/);
+  const fresh = JSON.parse(await exportPngTool(made.id, path.join(real, "new.png"))) as { note?: string };
+  assert.equal(fresh.note, undefined);
   assert.ok(fs.readFileSync(path.join(real, "poster.png")).equals(sentinel));
   assert.deepEqual(pngSize(fs.readFileSync(got.path)), [1080, 1920]);
 });
