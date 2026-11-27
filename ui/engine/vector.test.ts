@@ -33,6 +33,12 @@ describe('vector: the SVG allowlist', () => {
     assert.deepEqual(validateDesign(out), []);
   });
 
+  it('accepts line endpoints but refuses unknown digit attributes', () => {
+    const svg = serializeVector(parseVector('<svg viewBox="0 0 24 24"><line x1="2" y1="2" x2="22" y2="22" stroke="#2b2f36" stroke-width="2"/></svg>'));
+    assert.ok(svg.includes('<line x1="2" y1="2" x2="22" y2="22"'));
+    refused('<svg viewBox="0 0 24 24"><path d="M0 0" foo1="x"/></svg>', /'foo1' is not allowed/);
+  });
+
   it('refuses scripts, events, links, styles, text and markup tricks', () => {
     refused('<svg viewBox="0 0 24 24"><script>alert(1)</script></svg>', /<script> is not allowed/);
     refused('<svg viewBox="0 0 24 24" onload="alert(1)"><path d="M0 0h1"/></svg>', /'onload' is not allowed/);

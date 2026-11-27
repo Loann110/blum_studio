@@ -20,9 +20,9 @@ const ATTRS = new Set([
 // Numbers, path commands, keywords, colours and transform calls; never quotes,
 // angle brackets, ampersands, colons, semicolons or slashes.
 const VALUE_RE = /^[#\w\s.,%()+-]*$/;
-const OPEN_RE = /<([a-zA-Z]+)((?:\s+[a-zA-Z:-]+\s*=\s*"[^"]*")*)\s*(\/?)>/y;
+const OPEN_RE = /<([a-zA-Z]+)((?:\s+[a-zA-Z][a-zA-Z0-9:-]*\s*=\s*"[^"]*")*)\s*(\/?)>/y;
 const CLOSE_RE = /<\/([a-zA-Z]+)\s*>/y;
-const ATTR_RE = /([a-zA-Z:-]+)\s*=\s*"([^"]*)"/g;
+const ATTR_RE = /([a-zA-Z][a-zA-Z0-9:-]*)\s*=\s*"([^"]*)"/g;
 
 export interface VectorNode {
   tag: string;
