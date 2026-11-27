@@ -287,17 +287,18 @@ export function lintModel(doc: Design): LintReport {
     }
   }
 
-  for (let i = 0; i < doc.items.length; i++) {
-    for (let k = i + 1; k < doc.items.length; k++) {
-      const a = doc.items[i];
-      const c = doc.items[k];
-      if (!a || !c || !a.visible || !c.visible) continue;
+  // Flat order is draw order (a group's children sit at the group's place), so
+  // texts inside groups are checked like top-level ones, on absolute boxes.
+  for (let i = 0; i < flat.length; i++) {
+    for (let k = i + 1; k < flat.length; k++) {
+      const a = flat[i].item;
+      const c = flat[k].item;
       // Only a readable text can lose its words: decorative washes never warn.
       if (a.type !== 'text' || !readableText(contrasts.get(a), (a.props as TextProps).text)) continue;
       if (c.type === 'text') {
         // Two readable texts on each other: the upper one hides the lower's words.
         if (!readableText(contrasts.get(c), (c.props as TextProps).text)) continue;
-        const r = overlapRatio(a, c);
+        const r = overlapRatio(flat[i].absolute, flat[k].absolute);
         if (r > 0.05) {
           add('overlap', 'warn', a.id, `'${a.id}' overlaps '${c.id}'`);
         }
@@ -305,7 +306,7 @@ export function lintModel(doc: Design): LintReport {
         // A solid shape on top buries the words only past a third of their box.
         // Photos, images and stickers keep their transparency (a cut-out's box
         // overstates it), so their boxes alone never warn.
-        if (coverRatio(a, c) > 0.3) {
+        if (coverRatio(flat[i].absolute, flat[k].absolute) > 0.3) {
           add('overlap', 'warn', a.id, `'${a.id}' overlaps '${c.id}'`);
         }
       }

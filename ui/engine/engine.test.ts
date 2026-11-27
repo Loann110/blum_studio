@@ -397,6 +397,12 @@ describe('lint: overlaps warn only when reading suffers', () => {
     assert.ok(!got.includes('overlap'));
   });
 
+  it('two texts on each other inside a group still overlap', () => {
+    const child = (id: string): Json => ({ ...text(id, '#111111'), x: 0, y: 0 });
+    const group: Json = { id: 'g', name: 'g', type: 'group', x: 540, y: 960, width: 800, height: 140, items: [child('a'), child('b')] };
+    assert.ok(checks(story([group])).includes('overlap'));
+  });
+
   it('a pale wash under a title is no overlap either', () => {
     const got = checks(story([text('title', '#111111'), text('wash', '#eeeeee', '&')]));
     assert.ok(!got.includes('overlap'));

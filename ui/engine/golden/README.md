@@ -64,7 +64,7 @@ Basic engine behaviour: validation, edits, groups, alignment, photos, lint.
 | clean lint score 100 | no op | applies | 100 |
 | photo empty warns | no op | applies | 92 (photo_empty) |
 | photo visitor info | no op | applies | 100 (photo_empty) |
-| grouped lint absolute | no op | applies | 100 |
+| grouped lint absolute | no op | applies | 92 (overlap) |
 | accents survive | `add` | applies | 100 |
 | int patch numbers | `update` | applies | 92 (off_canvas) |
 
@@ -309,7 +309,7 @@ The add op: every item type, bad items refused.
 | full image | `add` | applies | 100 |
 | full sticker | `add` | applies | 100 |
 | full photo | `add` | applies | 100 |
-| group with children | `add` | applies | 84 (off_canvas) |
+| group with children | `add` | applies | 76 (off_canvas, overlap) |
 | missing item | `add` | error: add needs an item | 92 (empty_design) |
 | missing id | `add` | error: add needs an item id | 92 (empty_design) |
 | duplicate id | `add` | error: duplicate item id 't1' | 100 |
@@ -553,7 +553,7 @@ Design validation rules on whole designs.
 | v_bg_image | no op | error: background image needs a source | 92 (empty_design) |
 | v_empty_id | no op | error: an item id is empty | 100 |
 | v_dup_id | no op | error: duplicate item id 'a' | 92 (overlap) |
-| v_dup_nested | no op | error: duplicate item id 'same' | 92 (off_canvas) |
+| v_dup_nested | no op | error: duplicate item id 'same' | 84 (off_canvas, overlap) |
 | v_text_font | no op | error: item: 't' font is empty | 100 |
 | v_text_size | no op | error: item: 't' font size must be 0..1000 | 92 (text_too_small) |
 | v_text_color | no op | error: item: 't' bad text color | 100 |
@@ -594,8 +594,8 @@ Design validation rules on whole designs.
 | v_photo_mask_blob | no op | applies | 92 (photo_empty) |
 | v_photo_field | no op | error: item: 'p' bad visitor field key '9x' | 100 (photo_empty) |
 | v_group_small | no op | error: item: group 'g' needs at least 2 children | 100 |
-| v_group_shadow | no op | error: item 'g': shadow blur must be within 0..200 | 100 |
-| v_nested_child | no op | error: item 'g'/: 'b' bad shape 'hexagon' | 100 |
+| v_group_shadow | no op | error: item 'g': shadow blur must be within 0..200 | 92 (overlap) |
+| v_nested_child | no op | error: item 'g'/: 'b' bad shape 'hexagon' | 92 (overlap) |
 | v_opacity | no op | error: item: 't' opacity must be 0..1 | 100 |
 | v_wh | no op | error: item: 't' needs 0 < w,h <= 10000 | 92 (text_overflow) |
 
