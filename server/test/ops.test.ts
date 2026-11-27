@@ -46,7 +46,7 @@ test("first undo reverts the batch", async () => {
     assert.equal(redone.redone, true);
     assert.equal(redone.design.items.length, 1);
     assert.equal(((await (await c.post(`/api/designs/${id}/undo`)).json()) as { undone: boolean }).undone, true);
-    assert.equal(((await (await c.post(`/api/designs/${id}/undo`)).json()) as { undone: boolean }).undone, true);
+    assert.equal(((await (await c.post(`/api/designs/${id}/undo`)).json()) as { undone: boolean }).undone, false);
     assert.equal(((await (await c.post(`/api/designs/${id}/undo`)).json()) as { undone: boolean }).undone, false);
   } finally {
     await c.close();

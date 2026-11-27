@@ -71,6 +71,18 @@ test("undo redo round trip", async () => {
   assert.ok(err(await redoTool("no-such-id")).includes("unknown design"));
 });
 
+test("a second undo after one batch reports nothing to undo", async () => {
+  const made = make("One batch");
+  ok(await applyOpsTool(made.id, [{ op: "add", item: text("t1") }]));
+  const undone = JSON.parse(await undoTool(made.id)) as { undone: boolean; design: { items: unknown[] } };
+  assert.equal(undone.undone, true);
+  assert.deepEqual(undone.design.items, []);
+  assert.equal((JSON.parse(await undoTool(made.id)) as { undone: boolean }).undone, false);
+  const redone = JSON.parse(await redoTool(made.id)) as { redone: boolean; design: { items: Array<{ id: string }> } };
+  assert.equal(redone.redone, true);
+  assert.deepEqual(redone.design.items.map((i) => i.id), ["t1"]);
+});
+
 test("rejects silent noops", async () => {
   const made = make("Strict");
   ok(await applyOpsTool(made.id, [{ op: "add", item: text("t1") }]));

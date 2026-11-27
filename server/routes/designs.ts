@@ -47,7 +47,6 @@ export async function createRoute(req: IncomingMessage, res: ServerResponse): Pr
   const height = payload.height === undefined ? undefined : Number(payload.height);
   try {
     const made = createDesign(name, fmt, width, height);
-    historyFor(made.id).push(made.design);
     sendJson(res, 200, { id: made.id, design: made.design, updated: designMtimeMs(made.id) });
   } catch (e) {
     // Bad input is the caller's fault; a dead disk is ours (500).
@@ -126,7 +125,6 @@ export async function duplicateRoute(req: IncomingMessage, res: ServerResponse, 
   await withDesignLock(id, () => {
     try {
       const made = duplicateDesign(id, name);
-      historyFor(made.id).push(made.design);
       sendJson(res, 200, { id: made.id, design: made.design, updated: designMtimeMs(made.id) });
     } catch (e) {
       if (e instanceof UnknownDesign) fail(res, 404, "unknown design");

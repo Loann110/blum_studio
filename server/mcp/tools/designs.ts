@@ -4,7 +4,7 @@ import fs from "node:fs";
 import { designRulesFile } from "../../paths.js";
 import { compactDesign } from "../compact.js";
 import { itemExamplesDoc } from "../item-examples.js";
-import { historyFor, forget as forgetHistory } from "../../histories.js";
+import { forget as forgetHistory } from "../../histories.js";
 import { noteDesignCreated } from "../../sessions.js";
 import { UnknownDesign, createDesign, deleteDesign, isTemplateId, listDesigns } from "../../store.js";
 import { CUSTOM_MAX, CUSTOM_MIN, FORMATS } from "../../../ui/engine/index.js";
@@ -149,7 +149,6 @@ export function createDesignTool(name: unknown, format: unknown = "story", width
   const title = name.trim() || "Untitled";
   try {
     const made = createDesign(title, format, w, h);
-    historyFor(made.id).push(made.design);
     noteDesignCreated(made.id);
     return JSON.stringify({ id: made.id, design: made.design });
   } catch (e) {
