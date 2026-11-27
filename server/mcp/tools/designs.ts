@@ -15,8 +15,8 @@ export function overviewTool(): string {
 Short replies: apply_ops gives ok + touched ids, get_design one line
 per object, preview returns an image (region=[x,y,w,h] zooms).
 list_formats shows every size. Before designing, read
-style_guide() (grid, hierarchy, type, color, photo, depth, finish,
-reflexes), then style_guide('types') to pick one. Floor: text in the
+style_guide() (composition, hierarchy, type, color, photo, depth,
+finish, avoid), then style_guide('types') to pick one. Floor: text in the
 safe zone; body >= minimum; contrast >= 4.5:1; never cover a face.
 Start from create_design + add ops, never copy (api_info items: full
 examples). Preview each batch; check_design, then export.`;
@@ -45,7 +45,7 @@ const DOCS: Record<string, string> = {
     "apply_ops takes [{op, ...}]. Ops: add {item}, update {id, patch}, remove {id}, " +
     "reorder {id, to: front|back|forward|backward} or {id, index} (top-level items only, " +
     "never inside a group: ungroup first), duplicate {id, name?}, " +
-    "lock {id, locked}, group {ids, name?}, ungroup {id}, align {ids, align: " +
+    "lock {id, locked}, group {ids (2 or more), name?}, ungroup {id}, align {ids, align: " +
     "left|center-x|right|top|center-y|bottom}, distribute {ids, align: x|y}, " +
     "arrange {layout} (one op for a whole layout: " +
     "{stack: column|row, items: [...], align, gap: sm|md|lg, zone: safe|canvas} " +
@@ -81,10 +81,12 @@ const DOCS: Record<string, string> = {
     "The batch stops at the first error and changes nothing.",
   lint:
     "check_design returns findings (error|warn|info) and a 0..100 score. " +
-    "Checks: text_too_small (<30px), text_overflow (real font, wrapped), unsafe_zone and " +
-    "off_canvas (text only: pictures and shapes may bleed), overlap (text on text, or text covered), " +
+    "Checks: text_too_small (below the format minimum: list_formats), text_overflow (real font, wrapped), unsafe_zone and " +
+    "off_canvas (text only: pictures and shapes may bleed), overlap (text on text, or a solid shape over text, groups included), " +
+    "covered (note: a picture drawn over text, check it in preview), empty_design, " +
     "contrast (WCAG, against what is really behind the text; contrast_picture note on photos), empty_text, photo_empty " +
     "(warn when the frame has no image). " +
+    "Score: 100 minus 20 per error and 8 per warn; notes (info) never lower it. " +
     "polish_score is the score alone with error/warning counts. " +
     "Fix warns and errors before exporting.",
   resources:
@@ -93,11 +95,13 @@ const DOCS: Record<string, string> = {
     "photos (Unsplash URLs with themes), masks (rect|circle|arch|star|blob|heart). " +
     "import_image stores a local file or URL into designs/media/; remove_background=true cuts the subject out (transparent PNG: use it in a photo with fit contain, or as a sticker-like cut-out).",
   export:
-    "preview returns an image to look at (400 px wide, width= " +
-    "up to 1080); region=[x,y,w,h] crops a zoomed box first. " +
-    "preview_board returns one image per design for up to 12 designs. " +
+    "preview returns an image to look at (400 px wide, width 64..1080); " +
+    "region=[x,y,w,h] crops a zoomed box first. " +
+    "preview_board returns one image per design for up to 12 designs (width 64..270). " +
     "export_png writes the page at its pixel size (print formats at 2x = 300 dpi); " +
     "export_pdf writes the exact page size with selectable vector text. " +
+    "Without out_path files go to designs/<id>.png|.pdf; an existing out_path is kept and " +
+    "the export writes name-2.png (reply note says so). " +
     "Always preview and check_design before export_png or export_pdf. " +
     "undo reverts the last batch, redo reapplies it.",
 };

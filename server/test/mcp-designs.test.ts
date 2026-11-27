@@ -35,6 +35,18 @@ test("overview states rules and stays compact", () => {
   assert.ok(out.length <= 650);
 });
 
+test("docs name only topics and rules that exist", () => {
+  // Every style topic the overview and the tool description promise answers.
+  for (const topic of ["composition", "hierarchy", "type", "color", "photo", "depth", "finish", "avoid", "types"]) {
+    assert.ok(!styleGuideTool(topic).includes('"ok":false'), topic);
+  }
+  assert.ok(overviewTool().includes("composition") && !overviewTool().includes("grid"));
+  const lint = apiInfoTool("lint");
+  assert.ok(lint.includes("list_formats") && !lint.includes("<30px"));
+  assert.ok(lint.includes("never lower") && lint.includes("covered"));
+  assert.ok(apiInfoTool("ops").includes("2 or more"));
+});
+
 test("api_info topics and bad topic", () => {
   for (const topic of ["formats", "ops", "lint", "resources", "export"]) {
     assert.ok(!apiInfoTool(topic).includes("Unknown"), topic);
