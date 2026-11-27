@@ -29,7 +29,7 @@ export {
   validCustom,
   type PageFormat,
 } from './formats.js';
-export { applyCase } from './lint/lint.js';
+export { applyCase, careScore } from './lint/lint.js';
 
 /* ---- blumcore parity ---- */
 

@@ -1,7 +1,7 @@
 // Server-side lint: the engine's report, with text overflow re-checked
 // against the real fonts (the engine only estimates from character counts).
 import { lintDesign } from "../ui/engine/index.js";
-import { applyCase } from "../ui/engine/index.js";
+import { applyCase, careScore } from "../ui/engine/index.js";
 import { wrapText } from "./export/measure.js";
 
 type Json = Record<string, unknown>;
@@ -14,12 +14,6 @@ function collectTexts(items: unknown, out: Json[]): void {
     if (it.type === "group") collectTexts(it.items ?? it.children, out);
     else if (it.type === "text") out.push(it);
   }
-}
-
-function score(findings: Finding[]): number {
-  let s = 100;
-  for (const f of findings) s -= f.level === "error" ? 20 : f.level === "warn" ? 8 : 1;
-  return Math.max(0, s);
 }
 
 // True when the wrapped text is taller than its box or a word is wider; null if unmeasurable.
@@ -64,5 +58,5 @@ export async function lintMeasured(design: Json): Promise<LintReport> {
     const id = String(item.id);
     if (!seen.has(id) && measured.get(id)) kept.push({ check: "text_overflow", level: "warn", item: id, message: `'${id}' overflows its box with the real font: enlarge the box or shorten/shrink the text` });
   }
-  return { findings: kept, score: score(kept) };
+  return { findings: kept, score: careScore(kept) };
 }

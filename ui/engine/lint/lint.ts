@@ -312,11 +312,15 @@ export function lintModel(doc: Design): LintReport {
     }
   }
 
+  return { findings, score: careScore(findings) };
+}
+
+// The one care score: errors cost 20, warnings 8, notes are for the eye only.
+export function careScore(findings: { level: string }[]): number {
   let score = 100;
   for (const f of findings) {
     if (f.level === 'error') score -= 20;
     else if (f.level === 'warn') score -= 8;
-    // Notes are for the eye only and never lower the score.
   }
-  return { findings, score: Math.max(0, score) };
+  return Math.max(0, score);
 }

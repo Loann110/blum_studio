@@ -72,3 +72,15 @@ test("short box reports overflow when the width fits", async () => {
   const report = JSON.parse(await checkDesignTool(made.id)) as { findings: Array<{ check: string; item: string }> };
   assert.ok(report.findings.some((f) => f.check === "text_overflow" && f.item === "short"), JSON.stringify(report));
 });
+
+test("notes alone keep the score at 100", async () => {
+  const made = JSON.parse(createDesignTool("Notes", "story")) as { id: string };
+  await applyOpsTool(made.id, [{
+    op: "add",
+    item: { id: "empty", name: "empty", type: "text", x: 540, y: 900, width: 700, height: 200, props: { text: "", font: "Inter", size: 96, color: "#111111" } },
+  }]);
+  const report = JSON.parse(await checkDesignTool(made.id)) as { findings: Array<{ level: string }>; score: number };
+  assert.ok(report.findings.length > 0 && report.findings.every((f) => f.level === "info"), JSON.stringify(report));
+  assert.equal(report.score, 100);
+  assert.equal((JSON.parse(await polishScoreTool(made.id)) as { score: number }).score, 100);
+});
