@@ -28,3 +28,12 @@ export function isSafeImageSrc(src: string): boolean {
   }
   return false;
 }
+
+// A local file can never render: the agent must import it first.
+function isLocalPath(src: string): boolean {
+  return src.startsWith('/') || src.startsWith('\\') || /^[A-Za-z]:/.test(src) || /^file:/i.test(src);
+}
+
+export function localSrcHint(src: string): string {
+  return isLocalPath(src) ? ' (import the file with import_image first, then use its media/... src)' : '';
+}

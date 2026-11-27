@@ -156,7 +156,7 @@ tool.
 | `export/` | One shared Chromium (downloaded on first launch or export, never with the install); PNG, PDF, text measurement, background removal, request guard. |
 | `agents/` | Detecting and connecting AI agents (Claude Code, Codex, Muse, Claude Desktop, Cursor), and running Claude Code for the Create page. |
 | `node.d.ts` | Minimal Node type declarations, so the server builds without `@types/node`. |
-| `test/` | The server suite (`node:test`), one file per route group and MCP group, plus `i18n` (resources stay English), `csrf` (cross-site write guard), `mcp-templates` (examples refuse MCP writes) and `concurrency` (independent writers keep every item). |
+| `test/` | The server suite (`node:test`), one file per route group and MCP group, plus `i18n` (resources stay English), `csrf` (cross-site write guard), `mcp-templates` (examples refuse MCP writes), `mcp-errors` (one error shape, friendly messages) and `concurrency` (independent writers keep every item). |
 
 `scripts/build-server.mjs` bundles the server into `server/dist/`: `server.js`,
 `mcp.js` and `connect.js`.

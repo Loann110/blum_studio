@@ -14,7 +14,7 @@ import type {
   VectorProps,
 } from './model.js';
 import { parseVector } from './vector.js';
-import { isSafeImageSrc } from './sources.js';
+import { isSafeImageSrc, localSrcHint } from './sources.js';
 import { EngineError } from './errors.js';
 import {
   FILTER_PRESETS,
@@ -188,7 +188,7 @@ export function checkItem(it: Item, where: string, out: string[]): void {
       out.push(`${where}: '${it.id}' bad visitor field key '${t.field}'`);
     }
     if (t.textFill !== '' && !isSafeImageSrc(t.textFill)) {
-      out.push(`${where}: '${it.id}' bad textFill '${t.textFill}'`);
+      out.push(`${where}: '${it.id}' bad textFill '${t.textFill}'${localSrcHint(t.textFill)}`);
     }
   } else if (it.type === 'shape') {
     const s = it.props as ShapeProps;
@@ -233,7 +233,7 @@ export function checkItem(it: Item, where: string, out: string[]): void {
   } else if (it.type === 'image') {
     const im = it.props as ImageProps;
     if (im.src === '') out.push(`${where}: '${it.id}' image src is empty`);
-    else if (!isSafeImageSrc(im.src)) out.push(`${where}: '${it.id}' bad image src '${im.src}'`);
+    else if (!isSafeImageSrc(im.src)) out.push(`${where}: '${it.id}' bad image src '${im.src}'${localSrcHint(im.src)}`);
     checkFilter(im.filter, `${where} '${it.id}'`, out);
   } else if (it.type === 'sticker') {
     const st = it.props as StickerProps;
@@ -269,7 +269,7 @@ export function checkItem(it: Item, where: string, out: string[]): void {
       out.push(`${where}: '${it.id}' edge must be within 0..100`);
     }
     if (ph.src !== '' && !isSafeImageSrc(ph.src)) {
-      out.push(`${where}: '${it.id}' bad image src '${ph.src}'`);
+      out.push(`${where}: '${it.id}' bad image src '${ph.src}'${localSrcHint(ph.src)}`);
     }
   } else if (it.type === 'group') {
     const g = it.props as GroupProps;
@@ -356,7 +356,7 @@ export function validateModel(doc: Design): string[] {
     if (bg.image === '') out.push('background image needs a source');
   }
   if (bg.image !== '' && !isSafeImageSrc(bg.image)) {
-    out.push(`bad background image '${bg.image}'`);
+    out.push(`bad background image '${bg.image}'${localSrcHint(bg.image)}`);
   }
   if (!Number.isFinite(bg.grain) || bg.grain < 0 || bg.grain > 100) {
     out.push('background grain must be within 0..100');

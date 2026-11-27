@@ -77,13 +77,7 @@ export async function previewPng(design: Design, width: number, region: unknown)
 
 export async function previewTool(id: unknown, width: unknown = 400, region: unknown = null): Promise<string | Content[]> {
   const { design, err } = loadDesign(id);
-  if (err) {
-    try {
-      return "error: " + (JSON.parse(err) as { error: string }).error;
-    } catch {
-      return "error: unknown design";
-    }
-  }
+  if (err) return err;
   let want = 400;
   try {
     want = Number(width);
@@ -95,7 +89,7 @@ export async function previewTool(id: unknown, width: unknown = 400, region: unk
   try {
     return [png(await previewPng(design as Design, want, Array.isArray(region) ? region : null))];
   } catch (e) {
-    return `error: preview failed: ${(e as Error).message} (need Chromium? it should be in %LOCALAPPDATA%\\ms-playwright)`;
+    return toolError(`preview failed: ${(e as Error).message} (need Chromium? it should be in %LOCALAPPDATA%\\ms-playwright)`);
   }
 }
 

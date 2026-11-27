@@ -1,7 +1,7 @@
 // Engine photo field updates.
 import type { Item, PhotoProps } from '../../model.js';
 import { isColor, isMask, validFieldKey } from '../../names.js';
-import { isSafeImageSrc } from '../../sources.js';
+import { isSafeImageSrc, localSrcHint } from '../../sources.js';
 import { fail } from '../../errors.js';
 import { applyFilterField, needFor } from './common.js';
 
@@ -42,7 +42,7 @@ export function applyPhotoField(
         fail('fit must be cover|contain');
       }
       if (key === 'src') {
-        if (s !== '' && !isSafeImageSrc(s)) fail(`bad image src '${s}'`);
+        if (s !== '' && !isSafeImageSrc(s)) fail(`bad image src '${s}'${localSrcHint(s)}`);
         ph.src = s;
       }
       else if (key === 'field') {

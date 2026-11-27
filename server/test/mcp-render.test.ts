@@ -30,7 +30,7 @@ test("preview is a small png", async () => {
   assert.equal(parts[0].type, "image");
   const [w, h] = pngSize(Buffer.from(parts[0].data, "base64"));
   assert.ok(w <= 400 && h > 0, `${w}x${h}`);
-  assert.equal(await previewTool("no-such-id"), "error: unknown design 'no-such-id' (use list_designs to see ids)");
+  assert.ok(err(await previewTool("no-such-id") as string).includes("unknown design"));
   assert.ok(Array.isArray(await previewTool(made.id, "huge")));
 });
 

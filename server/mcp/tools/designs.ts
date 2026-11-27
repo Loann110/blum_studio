@@ -103,10 +103,11 @@ const DOCS: Record<string, string> = {
 };
 
 export function apiInfoTool(topic: unknown): string {
-  if (typeof topic !== "string" || !(topic in DOCS)) {
-    return "Unknown topic. Try: " + Object.keys(DOCS).sort().join(", ");
+  const key = typeof topic === "string" ? topic.toLowerCase() : "";
+  if (!(key in DOCS)) {
+    return toolError("Unknown topic. Try: " + Object.keys(DOCS).sort().join(", "));
   }
-  return DOCS[topic];
+  return DOCS[key];
 }
 
 // A designer's rules, as data shared with any app using this MCP.
@@ -125,10 +126,11 @@ export function styleGuideTool(topic: unknown = ""): string {
       .map(([, text]) => text)
       .join("\n\n");
   }
-  if (typeof topic !== "string" || !(topic in GUIDES)) {
-    return "Unknown topic. Try: " + Object.keys(GUIDES).sort().join(", ");
+  const key = typeof topic === "string" ? topic.toLowerCase() : "";
+  if (!(key in GUIDES)) {
+    return toolError("Unknown topic. Try: " + Object.keys(GUIDES).sort().join(", "));
   }
-  return GUIDES[topic];
+  return GUIDES[key];
 }
 
 export function listFormatsTool(): string {
