@@ -6,7 +6,9 @@ import { start } from "../main.js";
 import { getOrLaunchBrowser } from "../export/browser.js";
 
 export function useTempDesigns(tag: string): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), `blum-${tag}-`));
+  // A designs/ subfolder, so the user .env (next to designs) stays inside this temp dir.
+  const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), `blum-${tag}-`)), "designs");
+  fs.mkdirSync(dir);
   process.env.BLUM_DESIGNS = dir;
   // Stock keys are user state: every suite starts with none, whatever the shell exports.
   delete process.env.PEXELS_API_KEY;

@@ -12,3 +12,5 @@ server/browsers.json
 dev/tmp/
 
 /study
+# Local secrets (API keys): never commit
+.env

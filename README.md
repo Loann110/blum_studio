@@ -179,7 +179,7 @@ Requires **Node.js 20 or newer**. Nothing else: no Python, no compiler, no accou
 npx blum-studio
 ```
 
-This starts the studio at `http://127.0.0.1:8092/` and opens it in your browser. Your designs live in `~/BlumStudio/designs/`, and Chromium for exports downloads on first launch (one-time, about 170 MB). Set `BLUM_PORT` to use another port, `BLUM_DESIGNS` to move your designs, and `BLUM_NO_OPEN=1` to skip opening the browser.
+This starts the studio at `http://127.0.0.1:8092/` and opens it in your browser. Your designs live in `~/BlumStudio/designs/`, and Chromium for exports downloads on first launch (one-time, about 170 MB). Set `BLUM_PORT` to use another port, `BLUM_DESIGNS` to move your designs, and `BLUM_NO_OPEN=1` to skip opening the browser. Stock photo keys (Pexels, Pixabay) go in a `.env` file next to your designs folder (the repo root for a clone, `~/BlumStudio/.env` for an install): copy `.env.example`, or paste them in Settings, which writes that file for you. It is never committed.
 
 From sources, for development:
 

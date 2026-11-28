@@ -1,7 +1,7 @@
 // Stock photos over HTTP: status of the two key slots, and set/remove a key.
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { fail, readJson, sendJson } from "../http.js";
-import { probeStock, setStockKey, stockStatus, STOCK_SERVICES, type StockService } from "../stock.js";
+import { isValidStockKey, probeStock, setStockKey, stockStatus, STOCK_SERVICES, type StockService } from "../stock.js";
 
 export async function stockRoute(_req: IncomingMessage, res: ServerResponse): Promise<void> {
   sendJson(res, 200, stockStatus());
@@ -21,7 +21,11 @@ export async function stockSaveRoute(req: IncomingMessage, res: ServerResponse):
     fail(res, 400, "service must be pexels|pixabay");
     return;
   }
-  const key = typeof b.key === "string" ? b.key : "";
+  const key = typeof b.key === "string" ? b.key.trim() : "";
+  if (key && !isValidStockKey(key)) {
+    fail(res, 400, "key must be letters, digits, - or _ only");
+    return;
+  }
   await setStockKey(service as StockService, key);
   if (!key.trim()) {
     sendJson(res, 200, { service, status: "not set", ...stockStatus() });

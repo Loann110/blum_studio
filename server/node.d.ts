@@ -53,7 +53,7 @@ declare module "node:fs" {
   export function readFileSync(p: string, enc: "utf-8"): string;
   export function readFileSync(p: string): Buffer;
   export function writeFileSync(p: string, data: string | Buffer, enc?: "utf-8"): void;
-  export function writeFileSync(p: string, data: string | Buffer, opts?: { flag?: string }): void;
+  export function writeFileSync(p: string, data: string | Buffer, opts?: { flag?: string; mode?: number }): void;
   export function unlinkSync(p: string): void;
   export function mkdirSync(p: string, opts?: { recursive?: boolean }): void;
   export function statSync(p: string): { mtimeMs: number; size: number; isDirectory(): boolean; isFile(): boolean };
@@ -259,6 +259,7 @@ declare var process: {
   execPath: string;
   platform: string;
   kill(pid: number, signal?: string | number): void;
+  loadEnvFile?(path: string): void;
   exit(code?: number): never;
   on(event: "exit" | "SIGINT" | "SIGTERM", fn: () => void): void;
   on(event: "unhandledRejection" | "uncaughtException", fn: (reason: unknown) => void): void;

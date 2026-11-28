@@ -1,10 +1,10 @@
 // Stock photos: Pexels and Pixabay keys, search, and stock-id resolution.
-// Keys live under designs/.settings/ and never leave the server: the HTTP
-// API reports only which services have one, never the value.
+// Keys live in the user's .env (see envFile) and never leave the server: the
+// HTTP API reports only which services have one, never the value.
 import fs from "node:fs";
 import path from "node:path";
 import { downloadImage, type ResolveFn } from "./download.js";
-import { designsDir } from "./paths.js";
+import { envFile } from "./paths.js";
 import { withDesignLock } from "./store.js";
 
 export const STOCK_SERVICES = ["pexels", "pixabay"] as const;
@@ -32,35 +32,19 @@ export interface ResolvedStock {
 
 /* ---- keys ---- */
 
-function settingsDir(): string {
-  return path.join(designsDir(), ".settings");
+const ENV_NAMES: Record<StockService, string> = { pexels: "PEXELS_API_KEY", pixabay: "PIXABAY_API_KEY" };
+
+// Keys are one token of letters, digits, - or _: anything else (a newline, a
+// quote, "=") could write extra lines into .env, so it is refused.
+export function isValidStockKey(key: string): boolean {
+  return /^[A-Za-z0-9_-]{8,200}$/.test(key);
 }
 
-function keysFile(): string {
-  return path.join(settingsDir(), "keys.json");
-}
-
-function readFileKeys(): Partial<Record<StockService, string>> {
-  try {
-    const parsed = JSON.parse(fs.readFileSync(keysFile(), "utf-8")) as unknown;
-    if (!parsed || typeof parsed !== "object") return {};
-    const obj = parsed as Record<string, unknown>;
-    const keys: Partial<Record<StockService, string>> = {};
-    for (const service of STOCK_SERVICES) {
-      if (typeof obj[service] === "string") keys[service] = obj[service];
-    }
-    return keys;
-  } catch {
-    return {}; // no file yet, or a torn write: treat as unset
-  }
-}
-
-// Environment keys win over the file, so a shell or CI can override.
+// .env is loaded at start (loadDotEnv) and kept in step on every save.
 export function readKeys(): Record<StockService, string> {
-  const file = readFileKeys();
   return {
-    pexels: (process.env.PEXELS_API_KEY ?? "").trim() || file.pexels || "",
-    pixabay: (process.env.PIXABAY_API_KEY ?? "").trim() || file.pixabay || "",
+    pexels: (process.env.PEXELS_API_KEY ?? "").trim(),
+    pixabay: (process.env.PIXABAY_API_KEY ?? "").trim(),
   };
 }
 
@@ -69,18 +53,30 @@ export function stockStatus(): Record<StockService, boolean> {
   return { pexels: Boolean(keys.pexels), pixabay: Boolean(keys.pixabay) };
 }
 
+// Writes the key into the user's .env (other lines kept), then into this
+// process. An empty key removes the line. Callers validate with isValidStockKey.
 export function setStockKey(service: StockService, key: string): Promise<unknown> {
-  // One lock for the whole keys file, like design writes, so concurrent saves
-  // never interleave a torn JSON.
+  const name = ENV_NAMES[service];
+  const clean = key.trim();
+  if (clean && !isValidStockKey(clean)) return Promise.reject(new Error("invalid key format"));
+  // One lock for the file, like design writes, so concurrent saves never interleave.
   return withDesignLock("stock-settings", () => {
-    const all = readFileKeys();
-    const clean = key.trim();
-    if (clean) all[service] = clean;
-    else delete all[service];
-    fs.mkdirSync(settingsDir(), { recursive: true });
-    const tmp = path.join(settingsDir(), `.tmp-${process.pid}-${Date.now()}`);
-    fs.writeFileSync(tmp, JSON.stringify(all, null, 2), "utf-8");
-    fs.renameSync(tmp, keysFile());
+    const file = envFile();
+    let lines: string[] = [];
+    try {
+      lines = fs.readFileSync(file, "utf-8").split(/\r?\n/);
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+    }
+    lines = lines.filter((line) => !line.startsWith(`${name}=`));
+    while (lines.length && lines[lines.length - 1] === "") lines.pop();
+    if (clean) lines.push(`${name}=${clean}`);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    const tmp = `${file}.tmp-${process.pid}-${Date.now()}`;
+    fs.writeFileSync(tmp, lines.join("\n") + "\n", { mode: 0o600 }); // owner-only on Linux/macOS
+    fs.renameSync(tmp, file);
+    if (clean) process.env[name] = clean;
+    else delete process.env[name];
   });
 }
 
