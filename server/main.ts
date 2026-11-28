@@ -5,6 +5,7 @@ import path from "node:path";
 import { closeBrowser } from "./export/browser.js";
 import { fail, mimeFor, postAllowed, sendFile } from "./http.js";
 import { assetsDir, loadDotEnv, mediaDir, uiDir } from "./paths.js";
+import { migrateLegacyKeys } from "./stock.js";
 import { createRoute, deleteRoute, duplicateRoute, getRoute, listRoute, mtimeRoute, renameRoute, stateRoute, usageRoute } from "./routes/designs.js";
 import { exportRoute, pdfRoute, pngRoute } from "./routes/export.js";
 import { mediaRoute, uploadRoute } from "./routes/media.js";
@@ -188,6 +189,7 @@ export function start(port: number): ReturnType<typeof createServer> {
 
 if (process.argv[1]?.endsWith("server.js") || process.argv[1]?.endsWith("main.js")) {
   loadDotEnv();
+  void migrateLegacyKeys();
   const port = Number(process.env.BLUM_PORT ?? "8092") || 8092;
   start(port);
   // Probe the agents in the background so Settings opens instantly.

@@ -158,3 +158,8 @@
     flex-wrap: wrap;
   }
 }
+
+.stock-action button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

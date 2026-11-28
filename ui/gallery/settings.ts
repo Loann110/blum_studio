@@ -205,7 +205,17 @@ function setStockState(service: string, text: string): void {
   const state = stockStateEl(service);
   if (!state) return;
   state.textContent = text;
-  state.classList.toggle('on', text === 'Connected');
+  state.classList.toggle('on', text === 'Connected' || text === 'Key saved');
+  // The key never comes back from the server, so the empty field says whether one is saved.
+  const card = state.closest<HTMLElement>('.stock-card');
+  const input = card?.querySelector<HTMLInputElement>('.stock-key');
+  const save = card?.querySelector<HTMLButtonElement>('.stock-save');
+  const remove = card?.querySelector<HTMLButtonElement>('.stock-remove');
+  if (!input || !save || !remove) return;
+  const saved = text === 'Connected' || text === 'Key saved' || text === 'Invalid key';
+  input.placeholder = saved ? 'Key saved · paste to replace' : `${service === 'pexels' ? 'Pexels' : 'Pixabay'} API key`;
+  remove.disabled = !saved;
+  save.disabled = !input.value.trim();
 }
 
 async function loadStock(): Promise<void> {
@@ -218,7 +228,7 @@ async function loadStock(): Promise<void> {
     return; // a saved key still works; the fields stay editable
   }
   for (const service of STOCK_SERVICES) {
-    setStockState(service, status[service] ? 'Connected' : 'Not set');
+    setStockState(service, status[service] ? 'Key saved' : 'Not set');
   }
 }
 
@@ -242,6 +252,8 @@ async function runStock(service: string, key: string, button: HTMLButtonElement)
     /* status already set above */
   }
   button.disabled = false;
+  const input = button.closest('.stock-card')?.querySelector<HTMLInputElement>('.stock-key');
+  if (input && status !== 'the server did not answer') input.value = ''; // never leave a key on screen
   setStockState(service, status);
 }
 
@@ -252,6 +264,11 @@ for (const card of Array.from(document.querySelectorAll<HTMLElement>('.stock-car
   const save = card.querySelector<HTMLButtonElement>('.stock-save');
   const remove = card.querySelector<HTMLButtonElement>('.stock-remove');
   if (!input || !save || !remove) continue;
+  save.disabled = true;
+  remove.disabled = true;
+  input.addEventListener('input', () => {
+    save.disabled = !input.value.trim();
+  });
   save.addEventListener('click', () => void runStock(service, input.value, save));
   remove.addEventListener('click', () => {
     input.value = '';

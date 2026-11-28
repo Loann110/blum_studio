@@ -7,6 +7,7 @@ import { z } from "zod";
 import { badDesignId, toolError, type Content } from "./trust.js";
 import { recordUsage } from "../usage.js";
 import { loadDotEnv } from "../paths.js";
+import { migrateLegacyKeys } from "../stock.js";
 import { studioVersion } from "../version.js";
 import { designId, designIds, operationsSchema, regionSchema } from "./schemas.js";
 import { createDesignTool, deleteDraftTool, getDesignTool, listDesignsTool, listFormatsTool, apiInfoTool, overviewTool, styleGuideTool } from "./tools/designs.js";
@@ -90,6 +91,7 @@ export function registerTools(): void {
 
 export async function main(): Promise<void> {
   loadDotEnv();
+  await migrateLegacyKeys();
   registerTools();
   const transport = new StdioServerTransport();
   await server.connect(transport);

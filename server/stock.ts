@@ -4,7 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { downloadImage, type ResolveFn } from "./download.js";
-import { envFile } from "./paths.js";
+import { designsDir, envFile } from "./paths.js";
 import { withDesignLock } from "./store.js";
 
 export const STOCK_SERVICES = ["pexels", "pixabay"] as const;
@@ -78,6 +78,28 @@ export function setStockKey(service: StockService, key: string): Promise<unknown
     if (clean) process.env[name] = clean;
     else delete process.env[name];
   });
+}
+
+// The first Settings version kept keys in <designs>/.settings/keys.json: move
+// them into .env once (never over a key already set), then delete that file.
+// A key in an unexpected format keeps the file so nothing is ever lost.
+export async function migrateLegacyKeys(): Promise<void> {
+  const legacy = path.join(designsDir(), ".settings", "keys.json");
+  let old: Record<string, unknown>;
+  try {
+    old = JSON.parse(fs.readFileSync(legacy, "utf-8")) as Record<string, unknown>;
+  } catch {
+    return; // no legacy file (or unreadable): nothing to move
+  }
+  let keep = false;
+  for (const service of STOCK_SERVICES) {
+    const key = typeof old[service] === "string" ? (old[service] as string).trim() : "";
+    if (!key || process.env[ENV_NAMES[service]]) continue;
+    if (isValidStockKey(key)) await setStockKey(service, key);
+    else keep = true;
+  }
+  if (keep) console.error(`[blum] ${legacy}: a key has an unexpected format, kept the file; paste it in Settings`);
+  else fs.unlinkSync(legacy);
 }
 
 /* ---- service calls ---- */

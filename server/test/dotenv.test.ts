@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { envFile, loadDotEnv } from "../paths.js";
-import { setStockKey } from "../stock.js";
+import { migrateLegacyKeys, setStockKey } from "../stock.js";
 import { useTempDesigns } from "./helpers.js";
 
 useTempDesigns("dotenv");
@@ -42,4 +42,24 @@ test("Settings keys go into .env, keep other lines, and refuse injection", async
   await assert.rejects(setStockKey("pexels", "abcdefgh\nEVIL=1"), /invalid key format/);
   assert.ok(!fs.readFileSync(envFile(), "utf-8").includes("EVIL"));
   delete process.env.PEXELS_API_KEY;
+});
+
+test("keys saved by the first Settings version move into .env once", async () => {
+  fs.rmSync(envFile(), { force: true });
+  const legacyDir = path.join(process.env.BLUM_DESIGNS as string, ".settings");
+  const legacy = path.join(legacyDir, "keys.json");
+  fs.mkdirSync(legacyDir, { recursive: true });
+  fs.writeFileSync(legacy, JSON.stringify({ pexels: "oldPexels12345", pixabay: "oldPixabay67890" }));
+  process.env.PIXABAY_API_KEY = "shellPixabay111"; // already set: never overwritten
+  await migrateLegacyKeys();
+  assert.equal(fs.readFileSync(envFile(), "utf-8"), "PEXELS_API_KEY=oldPexels12345\n");
+  assert.equal(process.env.PIXABAY_API_KEY, "shellPixabay111");
+  assert.equal(fs.existsSync(legacy), false);
+
+  delete process.env.PEXELS_API_KEY;
+  delete process.env.PIXABAY_API_KEY;
+  fs.writeFileSync(legacy, JSON.stringify({ pexels: "bad key with spaces" }));
+  await migrateLegacyKeys();
+  assert.equal(fs.existsSync(legacy), true, "an unexpected key keeps the file: nothing lost");
+  fs.rmSync(legacyDir, { recursive: true, force: true });
 });
